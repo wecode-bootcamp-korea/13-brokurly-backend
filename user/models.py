@@ -8,19 +8,23 @@ class Gender(models.Model):
 
 
 class User(models.Model):
-    user_id           = models.CharField(max_length=50)
-    password          = models.CharField(max_length=200)
-    user_name         = models.CharField(max_length=50)
-    email             = models.EmailField(max_length=50)
-    phone             = models.CharField(max_length=50)
-    address           = models.CharField(max_length=50)
-    gender            = models.ForeignKey(Gender, on_delete=models.CASCADE)
-    date_of_birth     = models.CharField(max_length=50, null=True)
-    recommender       = models.CharField(max_length=50, null=True)
-    event             = models.CharField(max_length=50, null=True)
-    is_privacy_policy = models.BooleanField(default=False)
-    is_sms_agreed     = models.BooleanField(default=False)
-    is_email_agreed   = models.BooleanField(default=False)
+    user_id                      = models.CharField(max_length=50)
+    password                     = models.CharField(max_length=200)
+    user_name                    = models.CharField(max_length=50)
+    email                        = models.EmailField(max_length=50)
+    phone                        = models.CharField(max_length=50)
+    address                      = models.CharField(max_length=50)
+    gender                       = models.ForeignKey(Gender, on_delete=models.CASCADE)
+    date_of_birth                = models.CharField(max_length=50, null=True)
+    recommender                  = models.CharField(max_length=50, null=True)
+    event                        = models.CharField(max_length=50, null=True)
+    is_privacy_policy            = models.BooleanField(default=False)
+    is_sms_agreed                = models.BooleanField(default=False)
+    is_email_agreed              = models.BooleanField(default=False)
+    shopping_basket              = models.ManyToManyField('product.Product', through='ShoppingBasket', related_name='shopping_baskets')
+    orders                       = models.ManyToManyField('product.Product', through='Order', related_name='orders')
+    frequently_purchased_product = models.ManyToManyField('product.Product', through='FrequentlyPurchasedProduct', related_name='frequently_purchased_products')
+    reviews                      = models.ManyToManyField('product.Product', through='Review', related_name='reviews')
 
     class Meta:
         db_table = 'users'
@@ -29,7 +33,8 @@ class User(models.Model):
 class FrequentlyPurchasedProduct(models.Model):
     description = models.CharField(max_length=50)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
-    product     = models.ForeignKey("product.Product", on_delete=models.CASCADE)
+    product     = models.ForeignKey('product.Product', on_delete=models.CASCADE)
+
     class Meta:
         db_table = 'frequently_purchased_products'
 
@@ -51,7 +56,7 @@ class Order(models.Model):
     price        = models.FloatField()
     create_time  = models.DateTimeField(auto_now_add=True)
     user         = models.ForeignKey(User, on_delete=models.CASCADE)
-    product      = models.ForeignKey("product.Product", on_delete=models.CASCADE)
+    product      = models.ForeignKey('product.Product', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'orders'
@@ -60,7 +65,7 @@ class Order(models.Model):
 class ShoppingBasket(models.Model):
     quantity = models.IntegerField(default=1)
     user     = models.ForeignKey(User, on_delete=models.CASCADE)
-    product  = models.ForeignKey("product.Product", on_delete=models.CASCADE)
+    product  = models.ForeignKey('product.Product', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'shopping_baskets'
@@ -81,7 +86,7 @@ class Review(models.Model):
     views_count = models.IntegerField(default=0)
     content     = models.CharField(max_length=1000)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
-    product     = models.ForeignKey("product.Product", on_delete=models.CASCADE)
+    product     = models.ForeignKey('product.Product', on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'reviews'
