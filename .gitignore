@@ -6,7 +6,6 @@
 *.pot
 *.pyc
 __pycache__/
-migrations
 .vscode
 local_settings.py
 db.sqlite3
