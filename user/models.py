@@ -11,16 +11,16 @@ class User(models.Model):
     user_id           = models.CharField(max_length=50)
     password          = models.CharField(max_length=200)
     user_name         = models.CharField(max_length=50)
-    email             = models.CharField(max_length=50)
+    email             = models.EmailField(max_length=50)
     phone             = models.CharField(max_length=50)
     address           = models.CharField(max_length=50)
     gender            = models.ForeignKey(Gender, on_delete=models.CASCADE)
     date_of_birth     = models.CharField(max_length=50, null=True)
-    is_add_input      = models.BooleanField(null=True)
-    input_description = models.CharField(max_length=50, null=True)
+    recommender       = models.CharField(max_length=50, null=True)
+    event             = models.CharField(max_length=50, null=True)
     is_privacy_policy = models.BooleanField(default=False)
-    is_sms            = models.BooleanField(default=False)
-    is_email          = models.BooleanField(default=False)
+    is_sms_agreed     = models.BooleanField(default=False)
+    is_email_agreed   = models.BooleanField(default=False)
 
     class Meta:
         db_table = 'users'

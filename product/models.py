@@ -31,7 +31,7 @@ class Product(models.Model):
         db_table = 'products'
 
 
-class ProductOptions(models.Model):
+class ProductOption(models.Model):
     name            = models.CharField(max_length=50)
     price           = models.FloatField()
     is_sold_out     = models.BooleanField(null=True)
@@ -42,18 +42,18 @@ class ProductOptions(models.Model):
         db_table = 'sub_products'
 
 
-class packingType(models.Model):
+class PackingType(models.Model):
     name = models.CharField(max_length=100)
 
     class Meta:
-        db_table = "packing_type"
+        db_table = "packing_types"
 
 
-class shippingClassification(models.Model):
+class ShippingClassification(models.Model):
     name = models.CharField(max_length=100)
 
     class Meta:
-        db_table = "shipping_classification"
+        db_table = "shipping_classifications"
 
 
 class ProductInformation(models.Model):
@@ -80,7 +80,7 @@ class ProductTag(models.Model):
         db_table = 'product_tags'
 
 
-class discountProduct(models.Model):
+class DiscountProduct(models.Model):
     name             = models.CharField(max_length=50)
     discount_percent = models.FloatField()
     discount_start   = models.DateTimeField()
@@ -91,7 +91,7 @@ class discountProduct(models.Model):
         db_table = 'discount_products'
 
 
-class productQuestions(models.Model):
+class ProductQuestion(models.Model):
     name        = models.CharField(max_length=100)
     content     = models.CharField(max_length=1000)
     create_time = models.DateTimeField(auto_now_add=True)
