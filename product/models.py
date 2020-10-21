@@ -35,7 +35,7 @@ class ProductOption(models.Model):
     name            = models.CharField(max_length=50)
     price           = models.FloatField()
     is_sold_out     = models.BooleanField(null=True)
-    sales_limit     = models.IntegerField()
+    sales_limit     = models.IntegerField(default=0)
     product         = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     class Meta:
@@ -100,3 +100,7 @@ class ProductQuestion(models.Model):
 
     class Meta:
         db_table = 'product_questions'
+
+
+class MorningDeliveryArea(models.Model):
+    name = models.CharField(max_length=100)
