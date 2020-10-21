@@ -85,10 +85,3 @@ class Review(models.Model):
 
     class Meta:
         db_table = 'reviews'
-
-
-class Address(models.Model):
-    name = models.CharField(max_length=200)
-
-    class Meta:
-        db_table = 'addresses'
