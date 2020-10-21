@@ -64,8 +64,8 @@ class ProductInformation(models.Model):
     allergy_information     = models.CharField(max_length=200, null=True, blank=True)
     note                    = models.CharField(max_length=1000, null=True, blank=True)
     information             = models.CharField(max_length=1000, null=True, blank=True)
-    shipping_classification = models.ForeignKey(shippingClassification, on_delete=models.CASCADE)
-    packing_type            = models.ForeignKey(packingType, on_delete=models.CASCADE)
+    shipping_classification = models.ForeignKey(ShippingClassification, on_delete=models.CASCADE)
+    packing_type            = models.ForeignKey(PackingType, on_delete=models.CASCADE)
     product                 = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     class Meta:
