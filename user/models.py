@@ -91,4 +91,4 @@ class Address(models.Model):
     name = models.CharField(max_length=200)
 
     class Meta:
-        db_table = 'address'
+        db_table = 'addresses'
