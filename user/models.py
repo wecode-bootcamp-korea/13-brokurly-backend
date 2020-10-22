@@ -66,7 +66,8 @@ class ShoppingBasket(models.Model):
     quantity = models.IntegerField(default=1)
     user     = models.ForeignKey(User, on_delete=models.CASCADE)
     product  = models.ForeignKey('product.Product', on_delete=models.CASCADE)
-
+    option   = models.IntegerField(default=0)
+    
     class Meta:
         db_table = 'shopping_baskets'
 

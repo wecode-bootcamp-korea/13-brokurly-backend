@@ -19,7 +19,7 @@ class SubCategory(models.Model):
 
 class Product(models.Model):
     name             = models.CharField(max_length=50)
-    price            = models.FloatField()
+    price            = models.FloatField(default=0)
     content          = models.CharField(max_length=1000)
     is_sold_out      = models.BooleanField(null=True)
     image_url        = models.CharField(max_length=200)
@@ -34,13 +34,13 @@ class Product(models.Model):
 
 class ProductOption(models.Model):
     name            = models.CharField(max_length=50)
-    price           = models.FloatField()
+    price           = models.FloatField(default=0)
     is_sold_out     = models.BooleanField(null=True)
     sales_limit     = models.IntegerField(default=0)
     product         = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     class Meta:
-        db_table = 'sub_products'
+        db_table = 'product_options'
 
 
 class PackingType(models.Model):
