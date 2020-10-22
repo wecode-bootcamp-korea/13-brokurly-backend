@@ -1,20 +1,23 @@
 import json, re, bcrypt, jwt
 
-from django.views import View
-from django.http  import JsonResponse
+from django.views   import View
+from django.http    import JsonResponse
 
-from my_settings  import SECRET
-from user.models  import User, Gender
+from my_settings    import SECRET
+from user.models    import User, Gender, ShoppingBasket
+from product.models import Product
 
 class SignUp(View): # 회원가입
     def post(self, request):
         data = json.loads(request.body)
 
         try:
+            print("signup start")
             for key in data.keys():
                 if data['user_id'] == '' or data['password'] == '' or data['user_name'] == '' or data['phone'] == '' or data['address'] == '':
                     return JsonResponse({'message' : 'NOT_ENTERED_' + str.upper(key)}, status = 400)
             
+            print('password')
             password = data['password']
             hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
             User.objects.create(
@@ -37,7 +40,7 @@ class SignUp(View): # 회원가입
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
         except Exception as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
 class CheckID(View): # 아이디 중복확인
     def post(self, request):
@@ -53,7 +56,7 @@ class CheckID(View): # 아이디 중복확인
                 return JsonResponse({'message' : 'USER_ID_AVAILABLE'}, status = 200)
 
         except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
 class CheckEmail(View): # 이메일 중복확인
     def post(self, request):
@@ -73,7 +76,7 @@ class CheckEmail(View): # 이메일 중복확인
                 return JsonResponse({'message' : 'EMAIL_ID_AVAILABLE'}, status = 200)
 
         except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
 class SignIn(View): # 로그인
     def post(self, request):
@@ -93,4 +96,28 @@ class SignIn(View): # 로그인
                 return JsonResponse({'message' : 'INVALID_USER'}, status = 400)                    
             
         except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+class RegisterShoppingBasket(View): # 장바구니 등록
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try:
+            ShoppingBasket.objects.create(
+                quantity = data['quantity'],
+                user = User(id = data['user']),
+                product = Product(id = data['product']),
+            )
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+# class ViewShoppingBasket(View):
+#     def get(self, request):
+#         data = json.loads(request.body)
+
+#         try:
+
+#         except KeyError as ex:
+#             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)

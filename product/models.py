@@ -87,7 +87,7 @@ class DiscountProduct(models.Model):
     discount_start   = models.DateTimeField()
     discount_end     = models.DateTimeField()
     product          = models.ForeignKey(Product, on_delete=models.CASCADE)
-
+    
     class Meta:
         db_table = 'discount_products'
 
