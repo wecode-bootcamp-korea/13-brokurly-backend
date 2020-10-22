@@ -68,6 +68,7 @@ class ProductInformation(models.Model):
     shipping_classification = models.ForeignKey(ShippingClassification, on_delete=models.CASCADE)
     packing_type            = models.ForeignKey(PackingType, on_delete=models.CASCADE)
     product                 = models.ForeignKey(Product, on_delete=models.CASCADE)
+    discount                = models.ForeignKey("Discount", on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'product_informations'
@@ -81,15 +82,24 @@ class ProductTag(models.Model):
         db_table = 'product_tags'
 
 
-class DiscountProduct(models.Model):
+class Discount(models.Model):
     name             = models.CharField(max_length=50)
     discount_percent = models.FloatField()
+    discount_content = models.CharField(max_length=50)
     discount_start   = models.DateTimeField()
     discount_end     = models.DateTimeField()
-    product          = models.ForeignKey(Product, on_delete=models.CASCADE)
+    discount_time    = models.ForeignKey("DiscountTime", on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'discount_products'
+
+
+class DiscountTime(models.Model):
+    discount_start = models.DateTimeField()
+    discount_end   = models.DateTimeField()
+
+    class Meta:
+        db_table = 'discount_times'
 
 
 class ProductQuestion(models.Model):
@@ -105,3 +115,6 @@ class ProductQuestion(models.Model):
 
 class MorningDeliveryArea(models.Model):
     name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'morning_delivery_areas'
