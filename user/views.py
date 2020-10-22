@@ -144,6 +144,36 @@ class ViewShoppingBasket(View): # 장바구니 표출
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
+class UpdateBasketQuantity(View): # 장바구니 수량 변경
+    def put(self, request):
+        data = json.loads(request.body)
+
+        try:
+            item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
+
+            if data['increase_or_decrease'] == 'plus':
+                item.quantity += 1
+                item.save()
+            elif data['increase_or_decrease'] == 'minus':
+                item.quantity -= 1
+                item.save()
+            
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+class DeleteShoppingBasket(View): # 장바구니 목록 삭제
+    def delete(self, request):
+        data = json.loads(request.body)
+
+        try:
+            item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
+            item.delete()
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
 class RegisterFrequentlyProduct(View): # 늘 사는 것 등록
     def post(self, request):
         data = json.loads(request.body)
