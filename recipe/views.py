@@ -5,7 +5,7 @@ from django.http import JsonResponse
 
 from recipe.models import Recipe, RecipeCategory
 
-class RegisterRecipe(View):
+class RegisterRecipe(View): # 레시피 등록
     def post(self, request):
         data = json.loads(request.body)
         
@@ -22,7 +22,7 @@ class RegisterRecipe(View):
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class ViewRecipeCategory(View):
+class ViewRecipeCategory(View): # 레시피 카테고리별 표출
     def get(self, request):
         data = json.loads(request.body)
 
@@ -36,7 +36,7 @@ class ViewRecipeCategory(View):
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class ViewRecipeDetail(View):
+class ViewRecipeDetail(View): # 레시피 상세정보 표출
     def get(self, request):
         data = json.loads(request.body)
 
