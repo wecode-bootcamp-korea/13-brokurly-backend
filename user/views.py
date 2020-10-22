@@ -35,10 +35,9 @@ class SignUp(View): # 회원가입
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
-        except Exception as ex:
-            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
 class CheckID(View): # 아이디 중복확인
     def post(self, request):
@@ -115,6 +114,7 @@ class RegisterShoppingBasket(View): # 장바구니 등록
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
@@ -141,6 +141,7 @@ class ViewShoppingBasket(View): # 장바구니 표출
                     item['option_sales']    = product_option.sales_limit
             
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
@@ -159,6 +160,7 @@ class UpdateBasketQuantity(View): # 장바구니 수량 변경
                 item.save()
             
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
@@ -171,6 +173,7 @@ class DeleteShoppingBasket(View): # 장바구니 목록 삭제
             item.delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
@@ -178,12 +181,46 @@ class RegisterFrequentlyProduct(View): # 늘 사는 것 등록
     def post(self, request):
         data = json.loads(request.body)
 
-        try: # 중복 예외 처리 추가하기
-            FrequentlyPurchasedProduct.objects.create(
-                product     = Product(id = data['product_id']),
-                user        = User(id = data['user_id']),
-                description = data['description'],
-            )
+        try:
+            if FrequentlyPurchasedProduct.objects.filter(user = data['user_id'], product = data['product_id']).exists():
+                return JsonResponse({'message' : 'ALREADY_BEEN_REGISTERED'}, status = 400)
+            else:    
+                FrequentlyPurchasedProduct.objects.create(
+                    product     = Product(id = data['product_id']),
+                    user        = User(id = data['user_id']),
+                    description = data['description'],
+                )
+
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+class ViewFrequentlyProduct(View): # 늘 사는 것 표출
+    def get(self, request):
+        data = json.loads(request.body)
+
+        try:
+            product_list = FrequentlyPurchasedProduct.objects.filter(user = data['user_id']).values()
+            product_list = list(product_list)
+
+            for item in product_list:
+                product = Product.objects.filter(id = item['product_id']).get()
+                item['name'] = product.name
+                item['price'] = product.price
+            
+            return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+class DeleteFrequentlyProduct(View): # 늘 사는 것 삭제
+    def delete(self, request):
+        data = json.loads(request.body)
+
+        try:
+            item = FrequentlyPurchasedProduct.objects.filter(id = data['product_id']).get()
+            item.delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
         except KeyError as ex:
