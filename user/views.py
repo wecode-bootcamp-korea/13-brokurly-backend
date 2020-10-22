@@ -36,6 +36,8 @@ class SignUp(View): # 회원가입
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
 class CheckID(View): # 아이디 중복확인
     def post(self, request):
