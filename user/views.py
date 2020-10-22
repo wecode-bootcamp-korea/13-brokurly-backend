@@ -4,7 +4,7 @@ from django.views   import View
 from django.http    import JsonResponse
 
 from my_settings    import SECRET
-from user.models    import User, Gender, ShoppingBasket
+from user.models    import User, Gender, ShoppingBasket, FrequentlyPurchasedProduct
 from product.models import Product, ProductOption
 
 class SignUp(View): # 회원가입
@@ -79,7 +79,7 @@ class CheckEmail(View): # 이메일 중복확인
 class SignIn(View): # 로그인
     def post(self, request):
         data = json.loads(request.body)
-        
+
         try:
             if User.objects.filter(user_id = data['user_id']).exists():
                 user_data = User.objects.get(user_id = data['user_id'])
@@ -106,7 +106,6 @@ class RegisterShoppingBasket(View): # 장바구니 등록
     def post(self, request):
         data = json.loads(request.body)
 
-        #옵션 없는거 예외처리 추가해야됨.
         try:
             ShoppingBasket.objects.create(
                 quantity = data['quantity'],
@@ -142,5 +141,20 @@ class ViewShoppingBasket(View): # 장바구니 표출
                     item['option_sales']    = product_option.sales_limit
             
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+class RegisterFrequentlyProduct(View): # 늘 사는 것 등록
+    def post(self, request):
+        data = json.loads(request.body)
+
+        try: # 중복 예외 처리 추가하기
+            FrequentlyPurchasedProduct.objects.create(
+                product     = Product(id = data['product_id']),
+                user        = User(id = data['user_id']),
+                description = data['description'],
+            )
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from user.views  import SignUp, SignIn, CheckEmail, CheckID, RegisterShoppingBasket, ViewShoppingBasket
+from user.views  import SignUp, SignIn, CheckEmail, CheckID, RegisterShoppingBasket, ViewShoppingBasket, RegisterFrequentlyProduct
 
 urlpatterns = [
     path('signup', SignUp.as_view()),
@@ -9,4 +9,5 @@ urlpatterns = [
     path('checkemail', CheckEmail.as_view()),
     path('register_shoppingbasket', RegisterShoppingBasket.as_view()),
     path('view_shoppingbasket', ViewShoppingBasket.as_view()),
+    path('register_frequentlyproduct', RegisterFrequentlyProduct.as_view()),
 ]
