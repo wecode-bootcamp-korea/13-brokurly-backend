@@ -4,7 +4,7 @@ from django.views import View
 from django.http  import JsonResponse
 
 from my_settings  import SECRET
-from user.models  import User
+from user.models  import User, Gender
 
 class SignUp(View): # 회원가입
     def post(self, request):
@@ -24,18 +24,18 @@ class SignUp(View): # 회원가입
                 email             = data['email'],
                 phone             = data['phone'],
                 address           = data['address'],
-                is_gender         = data['is_gender'],
+                gender            = Gender(id = data['gender']),
                 date_of_birth     = data['date_of_birth'],
-                is_add_input      = data['is_add_input'],
-                input_description = data['input_description'],
+                recommender       = data['recommender'],
+                event             = data['event'],
                 is_privacy_policy = data['is_privacy_policy'],
-                is_sms            = data['is_sms'],
-                is_email          = data['is_email'],
+                is_sms_agreed     = data['is_sms_agreed'],
+                is_email_agreed   = data['is_email_agreed'],
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
         except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR'}, status = 400)
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
 class CheckID(View): # 아이디 중복확인
     def post(self, request):
