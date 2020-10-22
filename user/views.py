@@ -79,7 +79,7 @@ class CheckEmail(View): # 이메일 중복확인
 class SignIn(View): # 로그인
     def post(self, request):
         data = json.loads(request.body)
-        #이름, 주소, 번호, 이메일 추가
+        
         try:
             if User.objects.filter(user_id = data['user_id']).exists():
                 user_data = User.objects.get(user_id = data['user_id'])
@@ -89,7 +89,13 @@ class SignIn(View): # 로그인
                 
                 access_token = jwt.encode({'user_id' : data['user_id']}, SECRET, algorithm = 'HS256')
 
-                return JsonResponse({'message' : 'SUCCESS', 'authorization' : access_token.decode('utf-8')}, status = 200)
+                user_dic = {}
+                user_dic['user_name'] = user_data.user_name
+                user_dic['address']   = user_data.address
+                user_dic['phone']     = user_data.phone
+                user_dic['email']     = user_data.email
+
+                return JsonResponse({'message' : 'SUCCESS', 'authorization' : access_token.decode('utf-8'), 'user' : user_dic}, status = 200)
             else:
                 return JsonResponse({'message' : 'INVALID_USER'}, status = 400)                    
             
