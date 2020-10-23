@@ -6,6 +6,7 @@ from django.http    import JsonResponse
 from my_settings    import SECRET
 from user.models    import User, Gender, ShoppingBasket, FrequentlyPurchasedProduct
 from product.models import Product, ProductOption
+from core.utils     import access_decorator
 
 class SignUp(View): # 회원가입
     def post(self, request):
@@ -101,8 +102,8 @@ class SignIn(View): # 로그인
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class RegisterShoppingBasket(View): # 장바구니 등록
-    def post(self, request):
+class ShoppingBasket(View): # 장바구니
+    def post(self, request): # 장바구니 등록
         data = json.loads(request.body)
 
         try:
@@ -117,9 +118,8 @@ class RegisterShoppingBasket(View): # 장바구니 등록
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
-
-class ViewShoppingBasket(View): # 장바구니 표출
-    def get(self, request):
+    
+    def get(self, request): # 장바구니 조회
         data = json.loads(request.body)
 
         try:
@@ -145,27 +145,25 @@ class ViewShoppingBasket(View): # 장바구니 표출
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class UpdateBasketQuantity(View): # 장바구니 수량 변경
-    def put(self, request):
-        data = json.loads(request.body)
+    def put(self, request): # 장바구니 수량 변경
+            data = json.loads(request.body)
 
-        try:
-            item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
+            try:
+                item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
 
-            if data['increase_or_decrease'] == 'plus':
-                item.quantity += 1
-                item.save()
-            elif data['increase_or_decrease'] == 'minus':
-                item.quantity -= 1
-                item.save()
-            
-            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+                if data['increase_or_decrease'] == 'plus':
+                    item.quantity += 1
+                    item.save()
+                elif data['increase_or_decrease'] == 'minus':
+                    item.quantity -= 1
+                    item.save()
+                
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+            except KeyError as ex:
+                return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class DeleteShoppingBasket(View): # 장바구니 목록 삭제
-    def delete(self, request):
+    def delete(self, request): # 장바구니 목록 삭제
         data = json.loads(request.body)
 
         try:
@@ -177,8 +175,8 @@ class DeleteShoppingBasket(View): # 장바구니 목록 삭제
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class RegisterFrequentlyProduct(View): # 늘 사는 것 등록
-    def post(self, request):
+class FrequentlyProduct(View): # 늘 사는 것
+    def post(self, request): # 늘 사는 것 등록
         data = json.loads(request.body)
 
         try:
@@ -195,9 +193,8 @@ class RegisterFrequentlyProduct(View): # 늘 사는 것 등록
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
-
-class ViewFrequentlyProduct(View): # 늘 사는 것 표출
-    def get(self, request):
+    
+    def get(self, request): # 늘 사는 것 조회
         data = json.loads(request.body)
 
         try:
@@ -214,8 +211,7 @@ class ViewFrequentlyProduct(View): # 늘 사는 것 표출
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class DeleteFrequentlyProduct(View): # 늘 사는 것 삭제
-    def delete(self, request):
+    def delete(self, request): # 늘 사는 것 목록 삭제
         data = json.loads(request.body)
 
         try:
