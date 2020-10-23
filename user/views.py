@@ -168,8 +168,11 @@ class ShoppingBasketView(View): # 장바구니
         data = json.loads(request.body)
 
         try:
-            item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
-            item.delete()
+            if ShoppingBasket.objects.filter(id = data['shopbasket_id']).exists():
+                item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
+                item.delete()
+            else:
+                return JsonResponse({'message' : 'NOT_EXISTED'}, status = 400)
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
