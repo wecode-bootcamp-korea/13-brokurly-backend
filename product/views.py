@@ -45,10 +45,13 @@ class Category(View):
 class ProductList(View):
     def get(self, request):
         try:
-            main_category_check = request.GET.get('main', None)
-            category_id         = request.GET.get('productList', None) 
-            sort_type           = request.GET.get('sort_type', None) 
+            category_check   = request.GET.get('check', None)
+            main_category_id = request.GET.get('main', None)
+            sub_category_id  = request.GET.get('sub', None) 
+            sort_type        = request.GET.get('sort_type', None) 
             
+            categories = [sub_category.name for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
+     
             sort_type_set = {
                 '0' : 'id',
                 '1' : '-create_time',
@@ -64,26 +67,20 @@ class ProductList(View):
                 '낮은 가격순',
                 '높은 가격순'   
             ]
-
-            if int(main_category_check) > 1:
-                return JsonResponse({'message':'ValueError'}, status=400)
-                
-            if main_category_check:
-                sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(main_category_id=category_id)]
+         
+            if int(category_check):
+                sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
             else:
-                sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(id=category_id)]
-                
+                sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(id=sub_category_id)]
             products = []
             
-            for index, product in enumerate(
-                Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]).order_by(sort_type_set[sort_type])):
+            for product in Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]).order_by(sort_type_set[sort_type]):
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
                     discount_product = False
-                index += 1
                 products.append({
-                    "id"               : index,
+                    "id"               : product.id,
                     "name"             : product.name,
                     "content"          : product.content,
                     "imageUrl"         : product.image_url,
@@ -96,7 +93,7 @@ class ProductList(View):
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
-        return JsonResponse({'message':'SUCCESS', "sortings":sortings, "products":products}, status=200)
+        return JsonResponse({'message':'SUCCESS', "categories":categories, "sortings":sortings, "products":products}, status=200)
 
 
 class MdChoice(View):
@@ -104,16 +101,14 @@ class MdChoice(View):
         try:
             main_category_id = request.GET.get('category', None)
             products = []
-            index = -1
             for sub_category in SubCategory.objects.filter(main_category_id=main_category_id):
                 for product in sub_category.product_set.filter()[:3]:
                     if product.discount.exists():
                         discount_product = product.discount.get()
                     else:
                         discount_product = False
-                    index += 1
                     products.append({
-                        "id"               : index,
+                        "id"               : product.id,
                         "name"             : product.name,
                         "content"          : product.content,
                         "imageUrl"         : product.image_url,
@@ -127,3 +122,42 @@ class MdChoice(View):
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', "products":products}, status=200)
+
+
+class ProductDetail(View):
+    def get(self, request):
+        try:
+            product_id  = request.GET.get('product_item', None)
+            if Product.objects.filter(id=product_id).exists():
+                product = Product.objects.get(id=product_id)
+                if product.discount.exists():
+                    discount_product = product.discount.get()
+                else:
+                    discount_product = False
+                if product.productinformation_set.exists():
+                    product_information = product.productinformation_set.get()
+                else:
+                    product_information = False
+
+                product_detail = {
+                    "id"               : product.id,
+                    "name"             : product.name,
+                    "content"          : product.content,
+                    "imageUrl"         : product.image_url,
+                    "discountPercent"  : discount_product.discount_percent if discount_product else 0,
+                    "discountName"     : discount_product.name if discount_product else 0,
+                    "discountContent"  : discount_product.discount_content if discount_product else "",
+                    "discountPrice"    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
+                    "originalPrice"    : product.price,
+                    "salesUnit"        : product_information.sales_unit if product_information else "",
+                    "size"             : product_information.size if product_information else "",
+                    "productShipping"  : '/'.join([shipping.shipping_classification.name for shipping in product_information.productshipping_set.all()]) if product_information else "",
+                    "origin"           : product_information.origin if product_information else "",
+                    "pakingType"       : product_information.packing_type.name if product_information else "",
+                    "shelfLife"        : product_information.shelf_life if product_information else "",
+                    "information"      : product_information.information if product_information else "",
+                }
+                
+        except ValueError:
+            return JsonResponse({'message':'ValueError'}, status=400)
+        return JsonResponse({'message':'SUCCESS', "product_detail":product_detail}, status=200)
