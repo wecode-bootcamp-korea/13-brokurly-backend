@@ -7,6 +7,8 @@ from user.views  import (
     CheckID, 
     ShoppingBasketView, 
     FrequentlyProductView,
+    ProductReview,
+    ShoppingBasketCheckView,
     )
 
 urlpatterns = [
@@ -16,4 +18,6 @@ urlpatterns = [
     path('checkemail', CheckEmail.as_view()),
     path('shoppingbasket', ShoppingBasketView.as_view()),
     path('frequentlyproduct', FrequentlyProductView.as_view()),
+    path('product_review', ProductReview.as_view()),
+    path('shoppingbasket_check', ShoppingBasketCheckView.as_view()),
 ]

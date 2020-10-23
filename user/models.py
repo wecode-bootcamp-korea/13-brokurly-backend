@@ -67,6 +67,7 @@ class ShoppingBasket(models.Model):
     user     = models.ForeignKey(User, on_delete=models.CASCADE)
     product  = models.ForeignKey('product.Product', on_delete=models.CASCADE)
     option   = models.IntegerField(default=0)
+    checked  = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'shopping_baskets'
