@@ -102,7 +102,7 @@ class SignIn(View): # 로그인
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class ShoppingBasket(View): # 장바구니
+class ShoppingBasketView(View): # 장바구니
     def post(self, request): # 장바구니 등록
         data = json.loads(request.body)
 
@@ -175,7 +175,7 @@ class ShoppingBasket(View): # 장바구니
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-class FrequentlyProduct(View): # 늘 사는 것
+class FrequentlyProductView(View): # 늘 사는 것
     def post(self, request): # 늘 사는 것 등록
         data = json.loads(request.body)
 
