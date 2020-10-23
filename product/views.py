@@ -132,7 +132,11 @@ class ProductDetail(View):
         try:
             product_id  = request.GET.get('product_item', None)
             if Product.objects.filter(id=product_id).exists():
-                product = Product.objects.get(id=product_id)
+                product = Product.objects.filter(id=product_id)
+                sales_count = int(product.get().sales_count) + 1
+                product.update(sales_count=sales_count)
+    
+                product = product.get()
 
                 if product.discount.exists():
                     discount_product = product.discount.get()
@@ -183,6 +187,7 @@ class MainPageSection(View):
                     discount_product = product.discount.get()
                 else:
                     discount_product = False
+
                 products.append({
                     'id'               : product.id,
                     'name'             : product.name,
@@ -270,6 +275,7 @@ class MainPageSection(View):
                     discount_product = product.discount.get()
                 else:
                     discount_product = False
+                    
                 products.append({
                     'id'               : product.id,
                     'name'             : product.name,
@@ -286,3 +292,4 @@ class MainPageSection(View):
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'section_list':section_list}, status=200)
+
