@@ -19,6 +19,7 @@ class SignUp(View): # 회원가입
             
             password = data['password']
             hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
+
             User.objects.create(
                 user_id           = data['user_id'],
                 password          = hashed_pw.decode('utf-8'),
@@ -34,7 +35,7 @@ class SignUp(View): # 회원가입
                 is_sms_agreed     = data['is_sms_agreed'],
                 is_email_agreed   = data['is_email_agreed'],
             )
-
+            
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except KeyError as ex:
@@ -131,7 +132,7 @@ class ShoppingBasketView(View): # 장바구니
                 item['name']     = product.name
                 item['price']    = product.price
                 item['sold_out'] = product.is_sold_out
-                item['sales']    = product.sales_rate
+                item['sales']    = product.sales_count
 
                 if item['option'] != 0:
                     product_option = ProductOption.objects.filter(product = item['product_id'], id = item['option']).get()

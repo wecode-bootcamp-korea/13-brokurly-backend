@@ -23,10 +23,11 @@ class Product(models.Model):
     content          = models.CharField(max_length=1000)
     is_sold_out      = models.BooleanField(null=True)
     image_url        = models.CharField(max_length=200)
-    sales_rate       = models.FloatField()
+    sales_count      = models.IntegerField(default=0)
     create_time      = models.DateTimeField(auto_now_add=True)
     sub_category     = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
     product_question = models.ManyToManyField('user.User', through='ProductQuestion', related_name='product_questions')
+    discount         = models.ManyToManyField("Discount", through='DiscountProduct', related_name='discount_product')
     
     class Meta:
         db_table = 'products'
@@ -69,6 +70,7 @@ class ProductInformation(models.Model):
     packing_type            = models.ForeignKey(PackingType, on_delete=models.CASCADE)
     product                 = models.ForeignKey(Product, on_delete=models.CASCADE)
 
+
     class Meta:
         db_table = 'product_informations'
 
@@ -81,13 +83,21 @@ class ProductTag(models.Model):
         db_table = 'product_tags'
 
 
-class DiscountProduct(models.Model):
+class Discount(models.Model):
     name             = models.CharField(max_length=50)
+    discount_content = models.CharField(max_length=50)
     discount_percent = models.FloatField()
-    discount_start   = models.DateTimeField()
-    discount_end     = models.DateTimeField()
-    product          = models.ForeignKey(Product, on_delete=models.CASCADE)
-    
+
+    class Meta:
+        db_table = 'discounts'
+
+
+class DiscountProduct(models.Model):
+    discount_start = models.DateTimeField()
+    discount_end   = models.DateTimeField()
+    product        = models.ForeignKey(Product, on_delete=models.CASCADE)
+    discount       = models.ForeignKey(Discount, on_delete=models.CASCADE)
+
     class Meta:
         db_table = 'discount_products'
 
@@ -105,3 +115,6 @@ class ProductQuestion(models.Model):
 
 class MorningDeliveryArea(models.Model):
     name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'morning_delivery_areas'
