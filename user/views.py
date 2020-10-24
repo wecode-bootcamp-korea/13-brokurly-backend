@@ -169,7 +169,7 @@ class ShoppingBasketView(View): # 장바구니
 
     @access_decorator
     def put(self, request): # 장바구니 수량 변경
-            try: ########################### 1일때 예외처리 ##############################################
+            try: 
                 data = json.loads(request.body)
 
                 item = ShoppingBasket.objects.filter(id = data['shopbasket_id']).get()
@@ -178,8 +178,11 @@ class ShoppingBasketView(View): # 장바구니
                     item.quantity += 1
                     item.save()
                 elif data['increase_or_decrease'] == 'minus':
-                    item.quantity -= 1
-                    item.save()
+                    if item.quantity == 1:
+                        item.delete()
+                    else:
+                        item.quantity -= 1
+                        item.save()
                 
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
@@ -229,7 +232,7 @@ class ShoppingBasketCheckView(View):
                     return JsonResponse({'message' : 'SUCCESS'}, status = 200)
                 else:
                     return JsonResponse({'message' : 'NOT_EXISTED'}, status = 400)
-                    
+
             else:
                 return JsonResponse({'message' : 'INVALID_VALUE'}, status = 400)
 
@@ -349,20 +352,6 @@ class UserReview(View): # 유저의 상품 리뷰
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
         
-    # def get(self, request): # 유저의 상품 리뷰 조회
-    #     try: # user 19 21 24
-    #         return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-
-    #     except KeyError as ex:
-    #         return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
-    #     except Exception as ex:
-    #         return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
-
-# :8000/product/product_detail?product_item=1
-# class ProductDetail(View):
-#     def get(self, request):
-#         product_id = request.GET.get('product_item')
-
 class ProductReview(View):
     def get(self, request): # 상품의 전체리뷰 조회
         try: # user 19 21 24
@@ -377,9 +366,14 @@ class ProductReview(View):
                 rank = UserRank.objects.filter(user = item['user_id']).get()
                 item['user_rank']    = rank.name
                 item['product_name'] = product.name
-                pass
 
-            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+                if product.option != 0:
+                    product_option = ProductOption.objects.filter(product = product.id, id = product.option).get()
+                    item['product_option_name'] = product_option.name
+                else:
+                    item['product_option_name'] = ''
+                
+            return JsonResponse({'message' : 'SUCCESS', 'review_list' : review_list}, status = 200)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
