@@ -15,7 +15,7 @@ class SignUp(View): # 회원가입
 
             for key in data.keys():
                 if data['user_id'] == '' or data['password'] == '' or data['user_name'] == '' or data['phone'] == '' or data['address'] == '':
-                    return JsonResponse({'message' : 'NOT_ENTERED_' + str.upper(key)}, status = 400)
+                    return JsonResponse({'message' : 'NOT_ENTERED_KEY'}, status = 400)
             
             password = data['password']
             hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
@@ -54,7 +54,7 @@ class CheckID(View): # 아이디 중복확인
             if User.objects.filter(user_id = data['user_id']).exists():
                 return JsonResponse({'message' : 'USER_ID_DUPLICATED'}, status = 400)
             else:
-                return JsonResponse({'message' : 'USER_ID_AVAILABLE'}, status = 200)
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
@@ -76,7 +76,7 @@ class CheckEmail(View): # 이메일 중복확인
             if User.objects.filter(email = data['email']).exists():
                 return JsonResponse({'message' : 'EMAIL_DUPLICATED'}, status = 400)
             else:
-                return JsonResponse({'message' : 'EMAIL_ID_AVAILABLE'}, status = 200)
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
@@ -261,10 +261,12 @@ class ShoppingBasketCheckView(View):
                     if item['option'] != 0:
                         product_option = ProductOption.objects.filter(product = item['product_id'], id = item['option']).get()
                         if product_option.is_sold_out:
-                            item.delete()
+                            shop_item = ShoppingBasket.objects.filter(id = item['id']).get()
+                            shop_item.delete()
                     else:
                         if product.is_sold_out:
-                            item.delete()
+                            shop_item = ShoppingBasket.objects.filter(id = item['id']).get()
+                            shop_item.delete()
                 
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
             
