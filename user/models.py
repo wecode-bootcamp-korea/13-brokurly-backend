@@ -90,6 +90,7 @@ class Review(models.Model):
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     product     = models.ForeignKey('product.Product', on_delete=models.CASCADE)
     option      = models.IntegerField(default=0)
+    image_url   = models.CharField(max_length=200, null=True)
 
     class Meta:
         db_table = 'reviews'

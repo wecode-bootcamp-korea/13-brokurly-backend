@@ -111,6 +111,24 @@ class SignIn(View): # 로그인
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
+class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 등)
+    def get(self, request):
+        try:
+            token = request.headers.get('Authorization', None)
+            payload = jwt.decode(token, SECRET, algorithm='HS256')
+
+            user_data = User.objects.filter(user_id = payload['user_id']).values('id', 'user_name', 'email', 'phone', 'address', 'date_of_birth').get()
+            user_rank = UserRank.objects.filter(user = user_data['id']).get().name
+            
+            user_data['user_rank'] = user_rank
+
+            return JsonResponse({'message' : 'SUCCESS', 'user_data' : user_data}, status = 200)
+            
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
 class ShoppingBasketView(View): # 장바구니
     @access_decorator
     def post(self, request): # 장바구니 등록
@@ -339,7 +357,7 @@ class FrequentlyProductView(View): # 늘 사는 것
 class UserReview(View): # 유저의 상품 리뷰
     @access_decorator
     def post(self, request): # 유저의 상품 리뷰 등록
-        try:
+        try: ############### 하나의 상품 하나의 유저 하나의 리뷰 예외처리 ############
             data = json.loads(request.body)
 
             Review.objects.create(
@@ -349,6 +367,7 @@ class UserReview(View): # 유저의 상품 리뷰
                 content     = data['content'],
                 user        = User(id = data['user_id']),
                 product     = Product(id = data['product_id']),
+                image_url   = data['image_url'],
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -361,7 +380,8 @@ class UserReview(View): # 유저의 상품 리뷰
 class ProductReview(View):
     def get(self, request): # 상품의 전체리뷰 조회
         try: 
-            product_id = request.GET.get('product_item')
+            product_id = 5
+            # product_id = request.GET.get('product_item')
             product = Product.objects.filter(id = product_id).get()
 
             review_list = Review.objects.filter(product = product.id).values()

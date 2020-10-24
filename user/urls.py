@@ -10,6 +10,7 @@ from user.views  import (
     FrequentlyProductView,
     UserReview,
     ProductReview,
+    UserDataView,
     )
 
 urlpatterns = [
@@ -22,4 +23,5 @@ urlpatterns = [
     path('frequentlyproduct', FrequentlyProductView.as_view()),
     path('user_review', UserReview.as_view()),
     path('product_review', ProductReview.as_view()),
+    path('user_data', UserDataView.as_view()),
 ]
