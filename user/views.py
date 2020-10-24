@@ -227,9 +227,9 @@ class ShoppingBasketCheckView(View):
                     item.save()
 
                     return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-
                 else:
                     return JsonResponse({'message' : 'NOT_EXISTED'}, status = 400)
+                    
             else:
                 return JsonResponse({'message' : 'INVALID_VALUE'}, status = 400)
 
@@ -241,10 +241,32 @@ class ShoppingBasketCheckView(View):
     @access_decorator
     def delete(self, request): # 장바구니 선택 상품 or 품절 상품 삭제
         try:
-            for item in ShoppingBasket.objects.filter(checked=True):
-                item.delete()
+            data = json.loads(request.body)
 
-            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            if data['delete'] == 'selected':
+                for item in ShoppingBasket.objects.filter(checked=True):
+                    item.delete()
+
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            
+            elif data['delete'] == 'soldout':
+                shopping_list = list(ShoppingBasket.objects.values())
+
+                for item in shopping_list:
+                    product = Product.objects.filter(id = item['product_id']).get()
+
+                    if item['option'] != 0:
+                        product_option = ProductOption.objects.filter(product = item['product_id'], id = item['option']).get()
+                        if product_option.is_sold_out:
+                            item.delete()
+                    else:
+                        if product.is_sold_out:
+                            item.delete()
+                
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            
+            else:
+                return JsonResponse({'message' : 'INVALID_VALUE'}, status = 400)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
