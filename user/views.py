@@ -277,6 +277,7 @@ class ShoppingBasketCheckView(View):
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
     
 class FrequentlyProductView(View): # 늘 사는 것
+    @access_decorator
     def post(self, request): # 늘 사는 것 등록
         try:
             data = json.loads(request.body)
@@ -297,6 +298,7 @@ class FrequentlyProductView(View): # 늘 사는 것
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
     
+    @access_decorator
     def get(self, request): # 늘 사는 것 조회
         try:
             token = request.headers.get('Authorization', None)
@@ -317,6 +319,7 @@ class FrequentlyProductView(View): # 늘 사는 것
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
+    @access_decorator
     def delete(self, request): # 늘 사는 것 목록 삭제
         try:
             data = json.loads(request.body)
@@ -332,6 +335,7 @@ class FrequentlyProductView(View): # 늘 사는 것
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
 class UserReview(View): # 유저의 상품 리뷰
+    @access_decorator
     def post(self, request): # 유저의 상품 리뷰 등록
         try:
             data = json.loads(request.body)
