@@ -82,7 +82,7 @@ class UserRank(models.Model):
 
 
 class Review(models.Model):
-    name        = models.CharField(max_length=50)
+    title       = models.CharField(max_length=50)
     create_time = models.DateField(auto_now_add=True)
     help_count  = models.IntegerField(default=0)
     views_count = models.IntegerField(default=0)
