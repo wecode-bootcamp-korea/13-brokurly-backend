@@ -49,7 +49,14 @@ class ProductList(View):
             sort_type        = request.GET.get('sort_type', None) 
             
             categories = [sub_category.name for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
-     
+
+            main_category = MainCategory.objects.get(id=main_category_id)
+            category = {
+                'id'        : main_category.id,
+                'name'      : main_category.name,
+                'imageUrl'  : main_category.image_active_url
+            }
+
             sort_type_set = {
                 '0' : 'id',
                 '1' : '-create_time',
@@ -93,7 +100,7 @@ class ProductList(View):
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
-        return JsonResponse({'message':'SUCCESS', 'categories':categories, 'sortings':sortings, 'products':products}, status=200)
+        return JsonResponse({'message':'SUCCESS', 'mainCategories':category, 'subCategories':categories, 'sortings':sortings, 'products':products}, status=200)
 
 
 class MdChoice(View):
@@ -187,7 +194,7 @@ class MainPageSection(View):
                     discount_product = product.discount.get()
                 else:
                     discount_product = False
-
+                    
                 products.append({
                     'id'               : product.id,
                     'name'             : product.name,
@@ -275,7 +282,7 @@ class MainPageSection(View):
                     discount_product = product.discount.get()
                 else:
                     discount_product = False
-                    
+
                 products.append({
                     'id'               : product.id,
                     'name'             : product.name,
