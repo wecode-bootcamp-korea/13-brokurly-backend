@@ -1,8 +1,9 @@
 import json
 import random
 
-from django.http import JsonResponse
-from django.views import View
+from django.http      import JsonResponse
+from django.views     import View
+from django.db.models import Q
 
 from product.models import (
     MainCategory, 
@@ -300,3 +301,35 @@ class MainPageSection(View):
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'section_list':section_list}, status=200)
 
+
+class Search(View):
+    def get(self, request):
+        try:
+            search  = request.GET.get('keyword', None)
+            products = []
+                
+            for target in ProductInformation.objects.select_related('product').filter(
+                Q(product__name__contains=search) | 
+                Q(product__content__contains=search)|
+                Q(information__contains=search)
+                ):
+                if target.product.discount.exists():
+                    discount_product = target.product.discount.get()
+                else:
+                    discount_product = False
+
+                products.append({
+                    'id'               : target.product.id,
+                    'name'             : target.product.name,
+                    'content'          : target.product.content,
+                    'imageUrl'         : target.product.image_url,
+                    'discountPercent'  : discount_product.discount_percent if discount_product else 0,
+                    'discountName'     : discount_product.name if discount_product else 0,
+                    'discountContent'  : discount_product.discount_content if discount_product else '',
+                    'discountPrice'    : target.product.price - target.product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
+                    'originalPrice'    : target.product.price
+                })
+
+        except ValueError:
+            return JsonResponse({'message':'ValueError'}, status=400)
+        return JsonResponse({'message':'SUCCESS', 'products':products}, status=200)
