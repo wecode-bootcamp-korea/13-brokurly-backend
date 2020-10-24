@@ -358,8 +358,7 @@ class UserReview(View): # 유저의 상품 리뷰
         
 class ProductReview(View):
     def get(self, request): # 상품의 전체리뷰 조회
-        try: # user 19 21 24
-            # id / title / writer / date / help / view / product_name / product_option_name / content / user_rank
+        try: 
             product_id = request.GET.get('product_item')
             product = Product.objects.filter(id = product_id).get()
 
@@ -371,8 +370,8 @@ class ProductReview(View):
                 item['user_rank']    = rank.name
                 item['product_name'] = product.name
 
-                if product.option != 0:
-                    product_option = ProductOption.objects.filter(product = product.id, id = product.option).get()
+                if ProductOption.objects.filter(product=product.id).exists():
+                    product_option = ProductOption.objects.filter(product = product.id, id = item['option']).get()
                     item['product_option_name'] = product_option.name
                 else:
                     item['product_option_name'] = ''
