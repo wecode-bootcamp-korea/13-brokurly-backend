@@ -112,6 +112,7 @@ class SignIn(View): # 로그인
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
 class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 등)
+    @access_decorator
     def get(self, request):
         try:
             token = request.headers.get('Authorization', None)
@@ -124,23 +125,31 @@ class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 �
 
             return JsonResponse({'message' : 'SUCCESS', 'user_data' : user_data}, status = 200)
             
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
 class ShoppingBasketView(View): # 장바구니
     @access_decorator
     def post(self, request): # 장바구니 등록
-        try: ########### 같은 상품 등록 시 예외처리 ###################
+        try:
             data = json.loads(request.body)
-
-            ShoppingBasket.objects.create(
-                quantity = data['quantity'],
-                user     = User(id = data['user_id']),
-                product  = Product(id = data['product_id']),
-                option   = data['option'],
-            )
+            ############# test #############
+            data['user_id'] = 19
+            data['option']  = 0
+            ############# test #############
+            
+            basket_item = ShoppingBasket.objects.filter(user=data['user_id'], product=data['product_id'], option=data['option'])
+            if basket_item.exists():
+                item = basket_item.get()
+                item.quantity += data['quantity']
+                item.save()
+            else:
+                ShoppingBasket.objects.create(
+                    quantity = data['quantity'],
+                    user     = User(id = data['user_id']),
+                    product  = Product(id = data['product_id']),
+                    option   = data['option'],
+                )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
@@ -180,8 +189,6 @@ class ShoppingBasketView(View): # 장바구니
             
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
 
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
@@ -334,8 +341,6 @@ class FrequentlyProductView(View): # 늘 사는 것
             
             return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
 
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
@@ -400,7 +405,5 @@ class ProductReview(View):
                 
             return JsonResponse({'message' : 'SUCCESS', 'review_list' : review_list}, status = 200)
 
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)

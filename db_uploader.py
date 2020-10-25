@@ -50,33 +50,37 @@ fake = Faker()
 
 
 # product
-# csv_path = './product.csv'
-# with open(csv_path) as f:
-#     rows = csv.reader(f, delimiter = ',')
-#     next(f, None)
+csv_path = './product.csv'
+with open(csv_path) as f:
+    rows = csv.reader(f, delimiter = ',')
+    next(f, None)
 
-#     for row in rows:
-#         if row[1]:
-#             sub_category_id = SubCategory.objects.get(name=row[1]).id
+    count = 0
+    for row in rows:
+        if row[1]:
+            sub_category_id = SubCategory.objects.get(name=row[1]).id
 
-#         is_sold_out = random.randint(0,1)
+        is_sold_out = random.randint(0,1)
 
-#         tmp = True
-#         if is_sold_out == 1:
-#             tmp = True
-#         else:
-#             tmp = False
+        tmp = True
+        if is_sold_out == 1:
+            tmp = True
+        else:
+            tmp = False
 
-#         Product.objects.create(       
-#             name=row[2],
-#             price=row[3],
-#             content=row[4], 
-#             is_sold_out=tmp,
-#             image_url=row[5], 
-#             sales_count=random.randint(1,5000),
-#             create_time=fake.date_time_this_decade(),
-#             sub_category_id=sub_category_id,
-#             )
+        Product.objects.create(       
+            name=row[2],
+            price=row[3],
+            content=row[4], 
+            is_sold_out=tmp,
+            image_url=row[5], 
+            sales_count=random.randint(1,5000),
+            create_time=fake.date_time_this_decade(),
+            sub_category_id=sub_category_id,
+            )
+        count += 1
+        if count == 20:
+            break
 
 
 
