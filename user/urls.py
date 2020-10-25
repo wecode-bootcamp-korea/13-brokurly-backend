@@ -19,9 +19,9 @@ urlpatterns = [
     path('checkid', CheckID.as_view()),
     path('checkemail', CheckEmail.as_view()),
     path('shoppingbasket', ShoppingBasketView.as_view()),
-    path('shoppingbasket_check', ShoppingBasketCheckView.as_view()),
+    path('shoppingbasket-check', ShoppingBasketCheckView.as_view()),
     path('frequentlyproduct', FrequentlyProductView.as_view()),
-    path('user_review', UserReview.as_view()),
-    path('product_review', ProductReview.as_view()),
-    path('user_data', UserDataView.as_view()),
+    path('user-review', UserReview.as_view()),
+    path('product-review', ProductReview.as_view()),
+    path('user-data', UserDataView.as_view()),
 ]

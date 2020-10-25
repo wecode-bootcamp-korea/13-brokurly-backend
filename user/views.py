@@ -383,6 +383,21 @@ class UserReview(View): # 유저의 상품 리뷰
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
         
 class ProductReview(View):
+    def post(self, request): # 상품의 리뷰 상세보기 클릭 시 조회 수 증가
+        try:
+            data = json.loads(request.body)
+
+            review = Review.objects.filter(id = data['review_id']).get()
+            review.views_count += 1
+            review.save()
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
     def get(self, request): # 상품의 전체리뷰 조회
         try: 
             product_id = 5
