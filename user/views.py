@@ -400,8 +400,7 @@ class ProductReview(View):
 
     def get(self, request): # 상품의 전체리뷰 조회
         try: 
-            product_id = 5
-            # product_id = request.GET.get('product_item')
+            product_id = request.GET.get('product_item')
             product = Product.objects.filter(id = product_id).get()
 
             review_list = Review.objects.filter(product = product.id).values()
