@@ -73,15 +73,15 @@ class ProductList(View):
                 '낮은 가격순',
                 '높은 가격순'   
             ]
-         
+            
             if int(category_check):
                 sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
             else:
                 sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(id=sub_category_id)]
-
+            
             products = []
             
-            for product in Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]).order_by(sort_type_set[sort_type]):
+            for product in Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]).order_by('is_sold_out',sort_type_set[sort_type]):
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
@@ -92,12 +92,15 @@ class ProductList(View):
                     'name'             : product.name,
                     'content'          : product.content,
                     'imageUrl'         : product.image_url,
+                    'isSoldOut'        : product.is_sold_out,
                     'discountPercent'  : discount_product.discount_percent if discount_product else 0,
                     'discountName'     : discount_product.name if discount_product else 0,
                     'discountContent'  : discount_product.discount_content if discount_product else '',
                     'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
                     'originalPrice'    : product.price
                 })
+
+            
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
@@ -110,8 +113,9 @@ class MdChoice(View):
             main_category_id = request.GET.get('category', None)
             products = []
             sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
-            product_list = list(Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]))
+            product_list = list(Product.objects.filter(is_sold_out=False, sub_category__id__range=[min(sub_categories),max(sub_categories)]))
             random.shuffle(product_list)
+
             for product in product_list[:random.randint(10,12)]:
                 if product.discount.exists():
                     discount_product = product.discount.get()
@@ -123,6 +127,7 @@ class MdChoice(View):
                     'name'             : product.name,
                     'content'          : product.content,
                     'imageUrl'         : product.image_url,
+                    'isSoldOut'        : product.is_sold_out,
                     'discountPercent'  : discount_product.discount_percent if discount_product else 0,
                     'discountName'     : discount_product.name if discount_product else 0,
                     'discountContent'  : discount_product.discount_content if discount_product else '',
@@ -143,7 +148,6 @@ class ProductDetail(View):
                 product = Product.objects.filter(id=product_id)
                 sales_count = int(product.get().sales_count) + 1
                 product.update(sales_count=sales_count)
-    
                 product = product.get()
 
                 if product.discount.exists():
@@ -185,12 +189,11 @@ class MainPageSection(View):
         try:
             section_list = []
             
-            product_list = list(Product.objects.all()[:random.randint(10,12)])
+            product_list = list(Product.objects.filter(is_sold_out=False))
             random.shuffle(product_list)
-
             products = []
 
-            for product in product_list:
+            for product in product_list[:random.randint(10,12)]:
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
@@ -201,6 +204,7 @@ class MainPageSection(View):
                     'name'             : product.name,
                     'content'          : product.content,
                     'imageUrl'         : product.image_url,
+                    'isSoldOut'        : product.is_sold_out,
                     'discountPercent'  : discount_product.discount_percent if discount_product else 0,
                     'discountName'     : discount_product.name if discount_product else 0,
                     'discountContent'  : discount_product.discount_content if discount_product else '',
@@ -209,16 +213,17 @@ class MainPageSection(View):
                 })
             section_list.append({'products': products})
 
-            discount_product_list = list(DiscountProduct.objects.all()[:random.randint(10,12)])
+            discount_product_list = list(DiscountProduct.objects.all())
             random.shuffle(discount_product_list)
             products = []
             
-            for discount_product in discount_product_list:
+            for discount_product in discount_product_list[:random.randint(10,12)]:
                 products.append({
                     'id'              : discount_product.product.id,
                     'name'            : discount_product.product.name,
                     'content'         : discount_product.product.content,
                     'imageUrl'        : discount_product.product.image_url,
+                    'isSoldOut'       : discount_product.product.is_sold_out,
                     'discountPercent' : discount_product.discount.discount_percent,
                     'discountName'    : discount_product.discount.name,
                     'discountContent' : discount_product.discount.discount_content,
@@ -227,11 +232,11 @@ class MainPageSection(View):
                 })
             section_list.append({'products': products})
 
-            today_new_product_list = list(Product.objects.all().order_by('-create_time')[:random.randint(10,12)])
+            today_new_product_list = list(Product.objects.all().filter(is_sold_out=False).order_by('-create_time'))
             random.shuffle(today_new_product_list)
             products = []
 
-            for product in today_new_product_list:
+            for product in today_new_product_list[:random.randint(10,12)]:
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
@@ -250,11 +255,11 @@ class MainPageSection(View):
                 })
             section_list.append({'products': products})
             
-            now_hot_product_list = list(Product.objects.all().order_by('-sales_count')[:random.randint(10,12)])
+            now_hot_product_list = list(Product.objects.filter(is_sold_out=False).order_by('-sales_count'))
             random.shuffle(now_hot_product_list)
             products = []
 
-            for product in now_hot_product_list:
+            for product in now_hot_product_list[:random.randint(10,12)]:
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
@@ -273,12 +278,11 @@ class MainPageSection(View):
                 })
             section_list.append({'products': products})
 
-            bro_product_list = list(Product.objects.all()[:random.randint(10,12)])
+            bro_product_list = list(Product.objects.filter(is_sold_out=False))
             random.shuffle(bro_product_list)
-
             products = []
 
-            for product in bro_product_list:
+            for product in bro_product_list[:random.randint(10,12)]:
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
@@ -307,7 +311,7 @@ class Search(View):
         try:
             search  = request.GET.get('keyword', None)
             products = []
-                
+
             for target in ProductInformation.objects.select_related('product').filter(
                 Q(product__name__contains=search) | 
                 Q(product__content__contains=search)|
@@ -323,6 +327,7 @@ class Search(View):
                     'name'             : target.product.name,
                     'content'          : target.product.content,
                     'imageUrl'         : target.product.image_url,
+                    'isSoldOut'        : target.product.is_sold_out,
                     'discountPercent'  : discount_product.discount_percent if discount_product else 0,
                     'discountName'     : discount_product.name if discount_product else 0,
                     'discountContent'  : discount_product.discount_content if discount_product else '',
@@ -333,3 +338,22 @@ class Search(View):
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'products':products}, status=200)
+
+
+class RelatedProduct(View):
+    def get(self, request):
+        try:
+            product_id      = request.GET.get('product_item', None)
+            sub_category_id = SubCategory.objects.get(pk=product_id).id
+            products = list(Product.objects.filter(sub_category_id=sub_category_id, is_sold_out=False))
+            random.shuffle(products)
+            related_products = [{
+                    'id'            : product.id,
+                    'name'          : product.name,
+                    'imageUrl'      : product.image_url,
+                    'originalPrice' : product.price
+                } for product in products]
+
+        except ValueError:
+            return JsonResponse({'message':'ValueError'}, status=400)
+        return JsonResponse({'message':'SUCCESS', 'related_products':related_products}, status=200)  

@@ -6,7 +6,8 @@ from product.views import (
     ProductList,
     ProductDetail,
     MdChoice,
-    Search
+    Search,
+    RelatedProduct,
 )
 
 urlpatterns = [
@@ -15,5 +16,6 @@ urlpatterns = [
     path('product', ProductList.as_view()),
     path('home/md_choice', MdChoice.as_view()),
     path('product/product_detail', ProductDetail.as_view()),
-    path('search', Search.as_view())
+    path('search', Search.as_view()),
+    path('related_product', RelatedProduct.as_view())
 ]
