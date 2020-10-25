@@ -138,7 +138,7 @@ class ShoppingBasketView(View): # 장바구니
             data['option']  = 0
             ############# test #############
             
-            basket_item = ShoppingBasket.objects.filter(user=data['user_id'], product=data['product_id'], option=data['option'])
+            basket_item = ShoppingBasket.objects.filter(user=data['user_id'], product=data['productId'], option=data['option'])
             if basket_item.exists():
                 item = basket_item.get()
                 item.quantity += data['quantity']
@@ -147,7 +147,7 @@ class ShoppingBasketView(View): # 장바구니
                 ShoppingBasket.objects.create(
                     quantity = data['quantity'],
                     user     = User(id = data['user_id']),
-                    product  = Product(id = data['product_id']),
+                    product  = Product(id = data['productId']),
                     option   = data['option'],
                 )
 
@@ -392,7 +392,7 @@ class ProductReview(View):
             review.save()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-            
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
         except Exception as ex:
