@@ -38,7 +38,7 @@ class Category(View):
                             })
                 else:
                     return JsonResponse({'message':'This category does not exist.'}, status=400)
-                    
+
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'categories':categories}, status=200)
@@ -316,7 +316,7 @@ class ProductSearch(View):
 
             for target in ProductInformation.objects.select_related('product').filter(
                 Q(product__name__contains=search) | 
-                Q(product__content__contains=search)|
+                Q(product__content__contains=search) |
                 Q(information__contains=search)
                 ):
                 if target.product.discount.exists():
@@ -346,7 +346,7 @@ class RelatedProduct(View):
     def get(self, request):
         try:
             product_id      = request.GET.get('product_item', None)
-            sub_category_id = SubCategory.objects.get(pk=product_id).id
+            sub_category_id = Product.objects.get(pk=product_id).sub_category.id
             products = list(Product.objects.filter(sub_category_id=sub_category_id, is_sold_out=False))
             random.shuffle(products)
             related_products = [{
@@ -398,6 +398,7 @@ class NewProduct(View):
                     'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
                     'originalPrice'    : product.price
                 })
+
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'new_products':new_products}, status=200)
@@ -440,6 +441,7 @@ class BestProduct(View):
                     'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
                     'originalPrice'    : product.price
                 })
+
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'best_products':best_products}, status=200)
