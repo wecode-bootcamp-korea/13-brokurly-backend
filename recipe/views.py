@@ -27,7 +27,7 @@ class RecipeView(View): # 레시피
             category_id = request.GET.get('id')
 
             if category_id == '0':
-                recipe_list = Recipe.objects.values('id', 'recipe_category_id', 'name', 'image_url')
+                recipe_list = Recipe.objects.order_by('?').values('id', 'recipe_category_id', 'name', 'image_url')
             else:
                 recipe_list = Recipe.objects.filter(recipe_category = category_id).values('id', 'recipe_category_id', 'name', 'image_url')
 
