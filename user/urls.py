@@ -1,3 +1,4 @@
+from user.models import Order
 from django.urls import path
 
 from user.views  import (
@@ -9,9 +10,10 @@ from user.views  import (
     ShoppingBasketView, 
     ShoppingBasketCheckView,
     FrequentlyProductView,
-    UserReview,
     ProductReview,
     UserDataView,
+    UserReview,
+    OrderHistory,
     )
 
 urlpatterns = [
@@ -23,7 +25,8 @@ urlpatterns = [
     path('/shoppingbasket', ShoppingBasketView.as_view()),
     path('/shoppingbasket-check', ShoppingBasketCheckView.as_view()),
     path('/frequentlyproduct', FrequentlyProductView.as_view()),
-    path('/user-review', UserReview.as_view()),
     path('/product-review', ProductReview.as_view()),
     path('/user-data', UserDataView.as_view()),
+    path('/myreview', UserReview.as_view()),
+    path('/orderhistory', OrderHistory.as_view()),
 ]

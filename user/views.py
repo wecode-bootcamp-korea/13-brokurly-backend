@@ -2,9 +2,10 @@ import json, re, bcrypt, jwt
 
 from django.views   import View
 from django.http    import JsonResponse
+from random         import randint
 
 from my_settings    import SECRET, ALGORITHM
-from user.models    import Review, User, Gender, ShoppingBasket, FrequentlyPurchasedProduct, UserRank
+from user.models    import Order, Review, User, Gender, ShoppingBasket, FrequentlyPurchasedProduct, UserRank
 from product.models import Product, ProductOption
 from core.utils     import access_decorator
 
@@ -35,6 +36,9 @@ class SignUp(View): # 회원가입
                 is_sms_agreed     = data['is_sms_agreed'],
                 is_email_agreed   = data['is_email_agreed'],
             )
+            
+            id = User.objects.filter(user_id = data['user_id']).get().id
+            UserRank.objects.create(name='웰컴', user = User(id = id))
             
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
@@ -136,7 +140,7 @@ class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 �
     @access_decorator
     def get(self, request):
         try:
-            token = request.headers.get('Authorization', None)
+            token   = request.headers.get('Authorization', None)
             payload = jwt.decode(token, SECRET, algorithm=ALGORITHM)
 
             user_data = User.objects.filter(user_id = payload['user_id']).values('id', 'user_name', 'email', 'phone', 'address', 'date_of_birth').get()
@@ -182,9 +186,9 @@ class ShoppingBasketView(View): # 장바구니
     @access_decorator
     def get(self, request): # 장바구니 조회
         try:
-            token = request.headers.get('Authorization', None)
+            token   = request.headers.get('Authorization', None)
             payload = jwt.decode(token, SECRET, algorithm=ALGORITHM)
-            userid = User.objects.filter(user_id = payload['user_id']).get().id
+            userid  = User.objects.filter(user_id = payload['user_id']).get().id
 
             shopping_list = list(ShoppingBasket.objects.filter(user = userid).values())
 
@@ -207,7 +211,36 @@ class ShoppingBasketView(View): # 장바구니
                     item['option_price']    = product.price
                     item['option_sold_out'] = ''
                     item['option_sales']    = ''
+
+            # shopping_list = ShoppingBasket.objects.filter(user = userid).values(
+            #     'id',
+            #     'quantity',
+            #     'user_id',
+            #     'product_id',
+            #     'option',
+            #     'checked',
+            #     'product__name',
+            #     'product__price',
+            #     'product__is_sold_out',
+            #     'product__sales_count',
+            #     'product__image_url'
+            # )
+
+            # for item in shopping_list:
+            #     if item['option'] != 0:
+            #         product_option = ProductOption.objects.filter(product = item['product_id'], id = item['option']).get()
+            #         item['option_name']     = product_option.name
+            #         item['option_price']    = product_option.price
+            #         item['option_sold_out'] = product_option.is_sold_out
+            #         item['option_sales']    = product_option.sales_limit
+            #     else:
+            #         item['option_name']     = ''
+            #         item['option_price']    = item['product__price']
+            #         item['option_sold_out'] = ''
+            #         item['option_sales']    = ''
             
+            shopping_list = ShoppingBasket.objects.filter(user = userid)
+
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
 
         except Exception as ex:
@@ -336,7 +369,7 @@ class FrequentlyProductView(View): # 늘 사는 것
                 FrequentlyPurchasedProduct.objects.create(
                     product     = Product(id = data['product_id']),
                     user        = User(id = data['user_id']),
-                    description = data['description'],
+                    description = '',
                 )
 
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -349,9 +382,9 @@ class FrequentlyProductView(View): # 늘 사는 것
     @access_decorator
     def get(self, request): # 늘 사는 것 조회
         try:
-            token = request.headers.get('Authorization', None)
+            token   = request.headers.get('Authorization', None)
             payload = jwt.decode(token, SECRET, algorithm=ALGORITHM)
-            user = User.objects.filter(user_id = payload['user_id']).get().id
+            user    = User.objects.filter(user_id = payload['user_id']).get().id
 
             product_list = list(FrequentlyPurchasedProduct.objects.filter(user_id = user).values())
 
@@ -406,7 +439,7 @@ class UserReview(View): # 유저의 상품 리뷰
 class ProductReview(View):
     def post(self, request): # 상품의 리뷰 상세보기 클릭 시 조회 수 증가
         try:
-            data = json.loads(request.body)
+            data   = json.loads(request.body)
 
             review = Review.objects.filter(id = data['review_id']).get()
             review.views_count += 1
@@ -422,7 +455,7 @@ class ProductReview(View):
     def get(self, request): # 상품의 전체리뷰 조회
         try: 
             product_id = request.GET.get('product_item')
-            product = Product.objects.filter(id = product_id).get()
+            product    = Product.objects.filter(id = product_id).get()
 
             review_list = Review.objects.filter(product = product.id).values()
             review_list = list(review_list)
@@ -439,6 +472,50 @@ class ProductReview(View):
                     item['product_option_name'] = ''
                 
             return JsonResponse({'message' : 'SUCCESS', 'review_list' : review_list}, status = 200)
+
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
+class OrderHistory(View):
+    @access_decorator
+    def post(self, request): # 주문내역 등록
+        try:
+            data = json.loads(request.body)
+
+            Order.objects.create(
+                order_number = randint(60000000, 69999999),
+                price        = data['price'],
+                product      = Product(id = data['product_id']),
+                user         = User(id = data['user_id']),
+            )
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
+    @access_decorator
+    def get(self, request): # 주문내역 조회하기
+        try:
+            token   = request.headers.get('Authorization', None)
+            payload = jwt.decode(token, SECRET, algorithm = ALGORITHM)
+            user_id = User.objects.filter(user_id = payload['user_id']).get().id
+
+            if Order.objects.filter(user = user_id).exists():
+                order_list = Order.objects.filter(user = user_id).values(
+                    'id', 
+                    'order_number',
+                    'price',
+                    'create_time',
+                    'product__name'
+                    )
+                
+                return JsonResponse({'message' : 'SUCCESS', 'order_list' : list(order_list)}, status = 200)
+
+            else:
+                return JsonResponse({'message' : 'NOT_EXISTS_ORDERS'}, status = 400)
 
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)

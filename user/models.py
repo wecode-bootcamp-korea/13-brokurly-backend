@@ -51,7 +51,6 @@ class Reserve(models.Model):
 
 
 class Order(models.Model):
-    name         = models.CharField(max_length=100)
     order_number = models.IntegerField(default=0)
     price        = models.FloatField()
     create_time  = models.DateTimeField(auto_now_add=True)
