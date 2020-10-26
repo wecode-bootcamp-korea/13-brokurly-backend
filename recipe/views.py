@@ -24,7 +24,7 @@ class RecipeView(View): # 레시피
 
     def get(self, request): # 레시피 카테고리별 조회
         try:
-            category_id = request.GET.get('category_id')
+            category_id = request.GET.get('id')
 
             if category_id == '0':
                 recipe_list = Recipe.objects.values('id', 'recipe_category_id', 'name', 'image_url')
@@ -38,7 +38,7 @@ class RecipeView(View): # 레시피
 class RecipeDetailView(View): # 레시피 상세정보 조회
     def get(self, request):
         try:
-            recipe_id = request.GET.get('recipe_id')
+            recipe_id = request.GET.get('id')
 
             if recipe_id == '':
                 return JsonResponse({'message' : 'INVALID_ID'}, status = 200)
