@@ -2,12 +2,12 @@ import json
 import random
 import datetime
 
-from django.http      import JsonResponse
-from django.views     import View
-from django.db.models import Q
+from django.http            import JsonResponse
+from django.views           import View
+from django.db.models       import Q
 from dateutil.relativedelta import relativedelta
 
-from product.models   import (
+from product.models         import (
     MainCategory, 
     SubCategory,
     Product,
@@ -173,12 +173,14 @@ class ProductDetail(View):
                     'originalPrice'     : product.price,
                     'salesUnit'         : product_information.sales_unit if product_information else '',
                     'size'              : product_information.size if product_information else '',
-                    'productShipping'   : '/'.join([shipping.shipping_classification.name for shipping in product_information.productshipping_set.all()]) if product_information else "",
-                    'origin'            : product_information.origin if product_information else '',
-                    'pakingType'        : product_information.packing_type.name if product_information else '',
-                    'shelfLife'         : product_information.shelf_life if product_information else '',
-                    'allergyInformaion' : product_information.allergy_information if product_information else '',
-                    'information'       : product_information.information if product_information else '',
+                    'otherInformation'  : {
+                        'productShipping'   : '/'.join([shipping.shipping_classification.name for shipping in product_information.productshipping_set.all()]) if product_information else "",
+                        'origin'            : product_information.origin if product_information else '',
+                        'pakingType'        : product_information.packing_type.name if product_information else '',
+                        'shelfLife'         : product_information.shelf_life if product_information else '',
+                        'allergyInformaion' : product_information.allergy_information if product_information else '',
+                        'information'       : product_information.information if product_information else ''
+                    }
                 }
                 
         except ValueError:
@@ -350,11 +352,11 @@ class RelatedProduct(View):
             products = list(Product.objects.filter(sub_category_id=sub_category_id, is_sold_out=False))
             random.shuffle(products)
             related_products = [{
-                    'id'            : product.id,
-                    'name'          : product.name,
-                    'imageUrl'      : product.image_url,
-                    'originalPrice' : product.price
-                } for product in products]
+                'id'            : product.id,
+                'name'          : product.name,
+                'imageUrl'      : product.image_url,
+                'originalPrice' : product.price
+            } for product in products]
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
@@ -424,7 +426,7 @@ class BestProduct(View):
             ]
             
             best_products = []
-            for product in Product.objects.filter(sales_count__gt=3000).order_by('is_sold_out', sort_type_set[sort_type]):
+            for product in Product.objects.prefetch_related('discount').filter(sales_count__gt=3000).order_by('is_sold_out', sort_type_set[sort_type]):
                 if product.discount.exists():
                     discount_product = product.discount.get()
                 else:
@@ -441,8 +443,46 @@ class BestProduct(View):
                     'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
                     'originalPrice'    : product.price
                 })
-
+                
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'best_products':best_products}, status=200)
 
+
+class SaleProduct(View):
+    def get(self, request):
+        try:
+            sort_type = request.GET.get('sort_type')
+
+            sort_type_set = {
+                '0' : '-discount__discount_percent',
+                '1' : '-create_time',
+                '2' : '-sales_count',
+                '3' : 'price',
+                '4' : '-price'
+            }
+            
+            sortings = [
+                '혜택순',
+                '신상품순',
+                '인기상품순',
+                '낮은 가격순',
+                '높은 가격순'   
+            ]
+            
+            sale_products = [{
+                'id'              : product.id,
+                'name'            : product.name,
+                'content'         : product.content,
+                'imageUrl'        : product.image_url,
+                'isSoldOut'       : product.is_sold_out,
+                'discountPercent' : product.discount.get().discount_percent,
+                'discountName'    : product.discount.get().name,
+                'discountContent' : product.discount.get().discount_content,
+                'discountPrice'   : product.price - product.price * product.discount.get().discount_percent * 0.01,
+                'originalPrice'   : product.price
+            } for product in Product.objects.prefetch_related('discount').order_by('is_sold_out', sort_type_set[sort_type]) if product.discount.exists()]    
+
+        except ValueError:
+            return JsonResponse({'message':'ValueError'}, status=400)
+        return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'sale_products':sale_products}, status=200)
