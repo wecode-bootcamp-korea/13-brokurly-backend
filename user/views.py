@@ -509,7 +509,8 @@ class OrderHistory(View):
                     'order_number',
                     'price',
                     'create_time',
-                    'product__name'
+                    'product__name',
+                    'product__image_url'
                     )
                 
                 return JsonResponse({'message' : 'SUCCESS', 'order_list' : list(order_list)}, status = 200)
