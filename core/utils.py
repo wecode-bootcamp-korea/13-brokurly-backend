@@ -3,15 +3,15 @@ import jwt, json, requests
 from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 
-from my_settings import SECRET
+from my_settings import SECRET, ALGORITHM
 from user.models import User
 
 def access_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         try:
             access_token = request.headers.get('Authorization', None)
-            payload = jwt.decode(access_token, SECRET, algorithm = 'HS256')
-            user = User.objects.get(user_id = payload['user_id'])
+            payload      = jwt.decode(access_token, SECRET, algorithm = ALGORITHM)
+            user         = User.objects.get(user_id = payload['user_id'])
             request.user = user
 
         except jwt.DecodeError:
