@@ -3,7 +3,7 @@ import json, re, bcrypt, jwt
 from django.views   import View
 from django.http    import JsonResponse
 
-from my_settings    import SECRET
+from my_settings    import SECRET, ALGORITHM
 from user.models    import Review, User, Gender, ShoppingBasket, FrequentlyPurchasedProduct, UserRank
 from product.models import Product, ProductOption
 from core.utils     import access_decorator
@@ -94,13 +94,16 @@ class SignIn(View): # 로그인
                 if bcrypt.checkpw(data['password'].encode('utf-8'), user_data.password.encode('utf-8')) == False:
                     return JsonResponse({'message' : 'INVALID_USER'}, status = 400)
                 
-                access_token = jwt.encode({'user_id' : data['user_id']}, SECRET, algorithm = 'HS256')
+                access_token = jwt.encode({'user_id' : data['user_id']}, SECRET, algorithm = ALGORITHM)
 
                 user_dic = {}
-                user_dic['user_name'] = user_data.user_name
-                user_dic['address']   = user_data.address
-                user_dic['phone']     = user_data.phone
-                user_dic['email']     = user_data.email
+                user_dic['id']            = user_data.id
+                user_dic['user_name']     = user_data.user_name
+                user_dic['email']         = user_data.email
+                user_dic['phone']         = user_data.phone
+                user_dic['address']       = user_data.address
+                user_dic['date_of_birth'] = user_data.date_of_birth
+                user_dic['user_rank']     = UserRank.objects.filter(user = user_data.id).get().name
 
                 return JsonResponse({'message' : 'SUCCESS', 'authorization' : access_token.decode('utf-8'), 'user' : user_dic}, status = 200)
             else:
@@ -134,7 +137,7 @@ class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 �
     def get(self, request):
         try:
             token = request.headers.get('Authorization', None)
-            payload = jwt.decode(token, SECRET, algorithm='HS256')
+            payload = jwt.decode(token, SECRET, algorithm=ALGORITHM)
 
             user_data = User.objects.filter(user_id = payload['user_id']).values('id', 'user_name', 'email', 'phone', 'address', 'date_of_birth').get()
             user_rank = UserRank.objects.filter(user = user_data['id']).get().name
@@ -180,7 +183,7 @@ class ShoppingBasketView(View): # 장바구니
     def get(self, request): # 장바구니 조회
         try:
             token = request.headers.get('Authorization', None)
-            payload = jwt.decode(token, SECRET, algorithm='HS256')
+            payload = jwt.decode(token, SECRET, algorithm=ALGORITHM)
             userid = User.objects.filter(user_id = payload['user_id']).get().id
 
             shopping_list = list(ShoppingBasket.objects.filter(user = userid).values())
@@ -347,7 +350,7 @@ class FrequentlyProductView(View): # 늘 사는 것
     def get(self, request): # 늘 사는 것 조회
         try:
             token = request.headers.get('Authorization', None)
-            payload = jwt.decode(token, SECRET, algorithm='HS256')
+            payload = jwt.decode(token, SECRET, algorithm=ALGORITHM)
             user = User.objects.filter(user_id = payload['user_id']).get().id
 
             product_list = list(FrequentlyPurchasedProduct.objects.filter(user_id = user).values())
