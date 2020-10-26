@@ -38,6 +38,7 @@ class Category(View):
                             })
                 else:
                     return JsonResponse({'message':'This category does not exist.'}, status=400)
+                    
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
         return JsonResponse({'message':'SUCCESS', 'categories':categories}, status=200)
@@ -101,8 +102,6 @@ class ProductList(View):
                     'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
                     'originalPrice'    : product.price
                 })
-
-            
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
