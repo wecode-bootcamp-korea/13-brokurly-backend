@@ -1,11 +1,13 @@
 import json
 import random
+import datetime
 
 from django.http      import JsonResponse
 from django.views     import View
 from django.db.models import Q
+from dateutil.relativedelta import relativedelta
 
-from product.models import (
+from product.models   import (
     MainCategory, 
     SubCategory,
     Product,
@@ -161,22 +163,23 @@ class ProductDetail(View):
                     product_information = False
 
                 product_detail = {
-                    'id'               : product.id,
-                    'name'             : product.name,
-                    'content'          : product.content,
-                    'imageUrl'         : product.image_url,
-                    'discountPercent'  : discount_product.discount_percent if discount_product else 0,
-                    'discountName'     : discount_product.name if discount_product else 0,
-                    'discountContent'  : discount_product.discount_content if discount_product else '',
-                    'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
-                    'originalPrice'    : product.price,
-                    'salesUnit'        : product_information.sales_unit if product_information else '',
-                    'size'             : product_information.size if product_information else '',
-                    'productShipping'  : '/'.join([shipping.shipping_classification.name for shipping in product_information.productshipping_set.all()]) if product_information else "",
-                    'origin'           : product_information.origin if product_information else '',
-                    'pakingType'       : product_information.packing_type.name if product_information else '',
-                    'shelfLife'        : product_information.shelf_life if product_information else '',
-                    'information'      : product_information.information if product_information else '',
+                    'id'                : product.id,
+                    'name'              : product.name,
+                    'content'           : product.content,
+                    'imageUrl'          : product.image_url,
+                    'discountPercent'   : discount_product.discount_percent if discount_product else 0,
+                    'discountName'      : discount_product.name if discount_product else 0,
+                    'discountContent'   : discount_product.discount_content if discount_product else '',
+                    'discountPrice'     : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
+                    'originalPrice'     : product.price,
+                    'salesUnit'         : product_information.sales_unit if product_information else '',
+                    'size'              : product_information.size if product_information else '',
+                    'productShipping'   : '/'.join([shipping.shipping_classification.name for shipping in product_information.productshipping_set.all()]) if product_information else "",
+                    'origin'            : product_information.origin if product_information else '',
+                    'pakingType'        : product_information.packing_type.name if product_information else '',
+                    'shelfLife'         : product_information.shelf_life if product_information else '',
+                    'allergyInformaion' : product_information.allergy_information if product_information else '',
+                    'information'       : product_information.information if product_information else '',
                 }
                 
         except ValueError:
@@ -306,7 +309,7 @@ class MainPageSection(View):
         return JsonResponse({'message':'SUCCESS', 'section_list':section_list}, status=200)
 
 
-class Search(View):
+class ProductSearch(View):
     def get(self, request):
         try:
             search  = request.GET.get('keyword', None)
@@ -356,4 +359,89 @@ class RelatedProduct(View):
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
-        return JsonResponse({'message':'SUCCESS', 'related_products':related_products}, status=200)  
+        return JsonResponse({'message':'SUCCESS', 'related_products':related_products}, status=200)
+
+
+class NewProduct(View):
+    def get(self, request):
+        try:
+            sort_type = request.GET.get('sort_type')
+
+            sort_type_set = {
+                '0' : '-create_time',
+                '1' : '-sales_count',
+                '2' : 'price',
+                '3' : '-price'    
+            }
+            
+            sortings = [
+                '신상품순',
+                '인기상품순',
+                '낮은 가격순',
+                '높은 가격순'   
+            ]
+            
+            new_products = []
+            for product in Product.objects.filter(create_time__gt=datetime.datetime.now() - relativedelta(months=1)).order_by('is_sold_out', sort_type_set[sort_type]):
+                if product.discount.exists():
+                    discount_product = product.discount.get()
+                else:
+                    discount_product = False
+
+                new_products.append({
+                    'id'               : product.id,
+                    'name'             : product.name,
+                    'content'          : product.content,
+                    'imageUrl'         : product.image_url,
+                    'discountPercent'  : discount_product.discount_percent if discount_product else 0,
+                    'discountName'     : discount_product.name if discount_product else 0,
+                    'discountContent'  : discount_product.discount_content if discount_product else '',
+                    'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
+                    'originalPrice'    : product.price
+                })
+        except ValueError:
+            return JsonResponse({'message':'ValueError'}, status=400)
+        return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'new_products':new_products}, status=200)
+            
+
+class BestProduct(View):
+    def get(self, request):
+        try:
+            sort_type = request.GET.get('sort_type')
+
+            sort_type_set = {
+                '0' : '-create_time',
+                '1' : '-sales_count',
+                '2' : 'price',
+                '3' : '-price'    
+            }
+            
+            sortings = [
+                '신상품순',
+                '인기상품순',
+                '낮은 가격순',
+                '높은 가격순'   
+            ]
+            
+            best_products = []
+            for product in Product.objects.filter(sales_count__gt=3000).order_by('is_sold_out', sort_type_set[sort_type]):
+                if product.discount.exists():
+                    discount_product = product.discount.get()
+                else:
+                    discount_product = False
+
+                best_products.append({
+                    'id'               : product.id,
+                    'name'             : product.name,
+                    'content'          : product.content,
+                    'imageUrl'         : product.image_url,
+                    'discountPercent'  : discount_product.discount_percent if discount_product else 0,
+                    'discountName'     : discount_product.name if discount_product else 0,
+                    'discountContent'  : discount_product.discount_content if discount_product else '',
+                    'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
+                    'originalPrice'    : product.price
+                })
+        except ValueError:
+            return JsonResponse({'message':'ValueError'}, status=400)
+        return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'best_products':best_products}, status=200)
+
