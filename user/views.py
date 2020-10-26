@@ -111,6 +111,24 @@ class SignIn(View): # 로그인
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
+class FindID(View): # 회원 아이디 찾기
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            if User.objects.filter(user_name = data['user_name'], email = data['email']).exists():
+                user_id = User.objects.filter(user_name = data['user_name'], email = data['email']).get().user_id
+
+                return JsonResponse({'message' : 'SUCCESS', 'user_id' : user_id}, status = 200)
+            
+            else:
+                return JsonResponse({'message' : 'NOT_EXISTS_USER_NAME_OR_EMAIL'}, status = 400)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
 class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 등)
     @access_decorator
     def get(self, request):
