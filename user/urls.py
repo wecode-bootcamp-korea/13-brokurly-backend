@@ -1,32 +1,31 @@
-from user.models import Order
 from django.urls import path
 
 from user.views  import (
-    SignUp, 
-    SignIn, 
-    CheckEmail, 
-    CheckID,
-    FindID,
+    SignUpView,
+    SignInView,
+    CheckEmailView,
+    CheckIdView,
+    FindIdView,
     ShoppingBasketView, 
     ShoppingBasketCheckView,
     FrequentlyProductView,
-    ProductReview,
+    ProductReviewView,
     UserDataView,
-    UserReview,
-    OrderHistory,
+    UserReviewView,
+    OrderHistoryView,
     )
 
 urlpatterns = [
-    path('/signup', SignUp.as_view()),
-    path('/signin', SignIn.as_view()),
-    path('/checkid', CheckID.as_view()),
-    path('/checkemail', CheckEmail.as_view()),
-    path('/findid', FindID.as_view()),
+    path('/signup', SignUpView.as_view()),
+    path('/signin', SignInView.as_view()),
+    path('/checkid', CheckIdView.as_view()),
+    path('/checkemail', CheckEmailView.as_view()),
+    path('/findid', FindIdView.as_view()),
     path('/shoppingbasket', ShoppingBasketView.as_view()),
     path('/shoppingbasket-check', ShoppingBasketCheckView.as_view()),
     path('/frequentlyproduct', FrequentlyProductView.as_view()),
-    path('/product-review', ProductReview.as_view()),
+    path('/product-review', ProductReviewView.as_view()),
     path('/user-data', UserDataView.as_view()),
-    path('/myreview', UserReview.as_view()),
-    path('/orderhistory', OrderHistory.as_view()),
+    path('/myreview', UserReviewView.as_view()),
+    path('/orderhistory', OrderHistoryView.as_view()),
 ]

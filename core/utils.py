@@ -9,10 +9,11 @@ from user.models import User
 def access_decorator(func):
     def wrapper(self, request, *args, **kwargs):
         try:
-            access_token = request.headers.get('Authorization', None)
-            payload      = jwt.decode(access_token, SECRET, algorithm = ALGORITHM)
-            user         = User.objects.get(user_id = payload['user_id'])
-            request.user = user
+            access_token    = request.headers.get('Authorization', None)
+            payload         = jwt.decode(access_token, SECRET, algorithm = ALGORITHM)
+            user            = User.objects.get(user_id = payload['user_id'])
+            request.user    = user
+            request.payload = payload
 
         except jwt.DecodeError:
             return JsonResponse({'message' : 'INVALID_TOKEN'}, status = 400)

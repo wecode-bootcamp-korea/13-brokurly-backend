@@ -6,6 +6,11 @@ class Gender(models.Model):
     class Meta:
         db_table = 'genders'
 
+class UserRank(models.Model):
+    name = models.CharField(max_length=50, default='웰컴')
+
+    class Meta:
+        db_table = 'user_ranks'
 
 class User(models.Model):
     user_id                      = models.CharField(max_length=50)
@@ -25,10 +30,10 @@ class User(models.Model):
     orders                       = models.ManyToManyField('product.Product', through='Order', related_name='orders')
     frequently_purchased_product = models.ManyToManyField('product.Product', through='FrequentlyPurchasedProduct', related_name='frequently_purchased_products')
     reviews                      = models.ManyToManyField('product.Product', through='Review', related_name='reviews')
+    rank                         = models.ForeignKey(UserRank, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'users'
-
 
 class FrequentlyPurchasedProduct(models.Model):
     description = models.CharField(max_length=50)
@@ -49,7 +54,6 @@ class Reserve(models.Model):
     class Meta:
         db_table = 'reserves'
 
-
 class Order(models.Model):
     order_number = models.IntegerField(default=0)
     price        = models.FloatField()
@@ -60,25 +64,14 @@ class Order(models.Model):
     class Meta:
         db_table = 'orders'
 
-
 class ShoppingBasket(models.Model):
-    quantity = models.IntegerField(default=1)
-    user     = models.ForeignKey(User, on_delete=models.CASCADE)
-    product  = models.ForeignKey('product.Product', on_delete=models.CASCADE)
-    option   = models.IntegerField(default=0)
-    checked  = models.BooleanField(default=True)
+    quantity  = models.IntegerField(default=1)
+    user      = models.ForeignKey(User, on_delete=models.CASCADE)
+    product   = models.ForeignKey('product.Product', on_delete=models.CASCADE)
+    checked   = models.BooleanField(default=True)
 
     class Meta:
         db_table = 'shopping_baskets'
-
-
-class UserRank(models.Model):
-    name = models.CharField(max_length=50)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'user_ranks'    
-
 
 class Review(models.Model):
     title       = models.CharField(max_length=50)
@@ -88,7 +81,6 @@ class Review(models.Model):
     content     = models.CharField(max_length=1000)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     product     = models.ForeignKey('product.Product', on_delete=models.CASCADE)
-    option      = models.IntegerField(default=0)
     image_url   = models.CharField(max_length=200, null=True)
 
     class Meta:
