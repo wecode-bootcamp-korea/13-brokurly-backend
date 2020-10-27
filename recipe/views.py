@@ -15,7 +15,7 @@ class RecipeView(View): # 레시피
                 writer          = data['writer'],
                 image_url       = data['image_url'],
                 content         = data['content'],
-                recipe_category = RecipeCategory(id = data['recipe_category'])
+                recipe_category = data['recipe_category']
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -34,23 +34,3 @@ class RecipeView(View): # 레시피
             return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : list(recipe_list)}, status = 200)
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
-
-class RecipeDetailView(View): # 레시피 상세정보 조회
-    def get(self, request):
-        try:
-            recipe_id = request.GET.get('id')
-
-            if recipe_id == '':
-                return JsonResponse({'message' : 'INVALID_ID'}, status = 200)
-            else:
-                recipe = Recipe.objects.filter(id = recipe_id).get()
-                recipe.views_count += 1
-                recipe.save()
-
-                recipe_list = Recipe.objects.filter(id = recipe_id).values()
-
-                return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : list(recipe_list)}, status = 200)
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
-
-
