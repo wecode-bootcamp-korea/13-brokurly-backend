@@ -76,27 +76,19 @@ class ProductList(View):
                 sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
             else:
                 sub_categories = [sub_category.id for sub_category in SubCategory.objects.filter(id=sub_category_id)]
-            
-            products = []
-            
-            for product in Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]).order_by('is_sold_out',sort_type_set[sort_type]):
-                if product.discount.exists():
-                    discount_product = product.discount.get()
-                else:
-                    discount_product = False
 
-                products.append({
+            products = [{
                     'id'               : product.id,
                     'name'             : product.name,
                     'content'          : product.content,
                     'imageUrl'         : product.image_url,
                     'isSoldOut'        : product.is_sold_out,
-                    'discountPercent'  : discount_product.discount_percent if discount_product else 0,
-                    'discountName'     : discount_product.name if discount_product else 0,
-                    'discountContent'  : discount_product.discount_content if discount_product else '',
-                    'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if discount_product else 0,
+                    'discountPercent'  : product.discount.get().discount_percent if product.discount.exists() else 0,
+                    'discountName'     : product.discount.get().discount_product.name if product.discount.exists() else 0,
+                    'discountContent'  : product.discount.get().discount_product.discount_content if product.discount.exists() else '',
+                    'discountPrice'    : product.price - product.price * discount_product.discount_percent * 0.01 if product.discount.exists() else 0,
                     'originalPrice'    : product.price
-                })
+            } for product in Product.objects.filter(sub_category__id__range=[min(sub_categories),max(sub_categories)]).order_by('is_sold_out',sort_type_set[sort_type])]
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)
