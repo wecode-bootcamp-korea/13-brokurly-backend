@@ -201,7 +201,7 @@ class ShoppingBasketView(View): # 장바구니
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
     @access_decorator
-    def put(self, request): # 장바구니 수량 변경
+    def patch(self, request): # 장바구니 수량 변경
         try: 
             data = json.loads(request.body)
 
@@ -246,7 +246,7 @@ class ShoppingBasketView(View): # 장바구니
 
 class ShoppingBasketCheckView(View):
     @access_decorator
-    def put(self, request): # 장바구니 목록 체크박스 선택/해제
+    def patch(self, request): # 장바구니 목록 체크박스 선택/해제
         try:
             data = json.loads(request.body)
 
@@ -400,10 +400,9 @@ class ProductReviewView(View):
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
-    def get(self, request): # 상품의 전체리뷰 조회
+    def get(self, request, product_id): # 상품의 전체리뷰 조회
         try: 
-            product_id = request.GET.get('product_item')
-            product    = Product.objects.get(id = product_id)
+            product = Product.objects.get(id = product_id)
 
             review_list = [{
                 'id'           : item.id,
