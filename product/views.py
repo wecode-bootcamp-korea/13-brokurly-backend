@@ -19,25 +19,20 @@ from product.models         import (
 class Category(View):
     def get(self, request):
         try:
-            category_version = request.GET.get('main', None)
-            if category_version:
-                if MainCategory.objects.all().exists():
-                    categories = []
-                    for index, main_category in enumerate(MainCategory.objects.all()):
-                        categories.append({ 
-                            'id'             : main_category.id,
-                            'name'           : main_category.name,
-                            'imageUrl'       : main_category.image_url,
-                            'imageActiveUrl' : main_category.image_active_url,
-                            'sub_categories' : []
-                        })
-                        for sub_category in SubCategory.objects.filter(main_category_id=main_category.id):
-                            categories[index]['sub_categories'].append({
-                                'id'    : sub_category.id,
-                                'name'  : sub_category.name
-                            })
-                else:
-                    return JsonResponse({'message':'This category does not exist.'}, status=400)
+            if MainCategory.objects.all().exists():
+                categories = [{ 
+                    'id'             : main_category.id,
+                    'name'           : main_category.name,
+                    'imageUrl'       : main_category.image_url,
+                    'imageActiveUrl' : main_category.image_active_url,
+                    'sub_categories' : [{
+                        'id'    : sub_category.id,
+                        'name'  : sub_category.name
+                    } for sub_category in main_category.subcategory_set.all()]
+                } for main_category in MainCategory.objects.all()]
+
+            else:
+                return JsonResponse({'message':'This category does not exist.'}, status=400)
 
         except ValueError:
             return JsonResponse({'message':'ValueError'}, status=400)

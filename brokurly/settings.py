@@ -140,3 +140,5 @@ CORS_ALLOW_HEADERS = (
     'x-csrftoken',
     'x-requested-with',
 )
+
+STRIPE_SECRET_KEY = my_settings.STRIPE_SECRET_KEY

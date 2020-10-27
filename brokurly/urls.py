@@ -1,5 +1,6 @@
 from django.urls   import path, include
 
 urlpatterns = [
-    path('products', include('product.urls'))
+    path('products', include('product.urls')),
+    path('payments', include('payments.urls'))
 ]
