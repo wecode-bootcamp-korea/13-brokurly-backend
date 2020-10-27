@@ -24,13 +24,22 @@ class RecipeView(View): # 레시피
 
     def get(self, request): # 레시피 카테고리별 조회
         try:
-            category_id = request.GET.get('id')
+            category_id = request.GET.get('category_id')
+            recipe_id   = request.GET.get('id')
 
             if category_id == '0':
-                recipe_list = Recipe.objects.order_by('?').values('id', 'recipe_category_id', 'name', 'image_url')
-            else:
-                recipe_list = Recipe.objects.filter(recipe_category = category_id).values('id', 'recipe_category_id', 'name', 'image_url')
+                recipe_list = Recipe.objects.order_by('?').values()
 
-            return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : list(recipe_list)}, status = 200)
+            recipe_list = [{
+                'id'          : item.id,
+                'name'        : item.name,
+                'writer'      : item.writer,
+                'image_url'   : item.image_url,
+                'create_time' : item.create_time,
+                'views_count' : item.views_count,
+                'content'     : item.content,
+            } for item in Recipe.objects.get(recipe_category = 1, id = recipe_id)]
+
+            return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : recipe_list}, status = 200)
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
