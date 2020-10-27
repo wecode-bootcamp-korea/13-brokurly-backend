@@ -305,13 +305,14 @@ class FrequentlyProductView(View): # 늘 사는 것
     def post(self, request): # 늘 사는 것 등록
         try:
             data = json.loads(request.body)
+            user = request.user
 
-            if FrequentlyPurchasedProduct.objects.filter(user = data['user_id'], product = data['product_id']).exists():
+            if FrequentlyPurchasedProduct.objects.filter(user = user.id, product = data['product_id']).exists():
                 return JsonResponse({'message' : 'ALREADY_BEEN_REGISTERED'}, status = 400)
             else:    
                 FrequentlyPurchasedProduct.objects.create(
                     product     = Product(id = data['product_id']),
-                    user        = User(id = data['user_id']),
+                    user        = user.id,
                     description = '',
                 )
 
@@ -328,12 +329,13 @@ class FrequentlyProductView(View): # 늘 사는 것
             user = request.user
 
             product_list = [{
-                'id'          : item.id,
-                'description' : item.description,
-                'user_id'     : item.user.id,
-                'product_id'  : item.product.id,
-                'name'        : item.product.name,
-                'price'       : item.product.price
+                'id'            : item.id,
+                'description'   : item.description,
+                'user_id'       : item.user.id,
+                'product_id'    : item.product.id,
+                'name'          : item.product.name,
+                'price'         : item.product.price,
+                'product_image' : item.product.image_url
             } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
@@ -345,8 +347,9 @@ class FrequentlyProductView(View): # 늘 사는 것
     def delete(self, request): # 늘 사는 것 목록 삭제
         try:
             data = json.loads(request.body)
+            user = request.user
 
-            item = FrequentlyPurchasedProduct.objects.get(id = data['product_id'])
+            item = FrequentlyPurchasedProduct.objects.get(id = data['product_id'], user = user.id)
             item.delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -361,13 +364,14 @@ class UserReviewView(View): # 유저의 상품 리뷰
     def post(self, request): # 유저의 상품 리뷰 등록
         try: 
             data = json.loads(request.body)
+            user = request.user
 
             Review.objects.create(
-                name        = data['name'],
+                title       = data['title'],
                 help_count  = 0,
                 views_count = 0,
                 content     = data['content'],
-                user        = User(id = data['user_id']),
+                user        = user.id,
                 product     = Product(id = data['product_id']),
                 image_url   = data['image_url'],
             )
