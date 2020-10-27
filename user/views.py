@@ -380,7 +380,7 @@ class UserReviewView(View): # 유저의 상품 리뷰
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
         
 class ProductReviewView(View):
-    def post(self, request): # 상품의 리뷰 상세보기 클릭 시 조회 수 증가
+    def post(self, request, product_id): # 상품의 리뷰 상세보기 클릭 시 조회 수 증가
         try:
             data = json.loads(request.body)
 
@@ -436,12 +436,14 @@ class OrderHistoryView(View):
 
             order_num = randint(60000000, 69999999)
 
-            Order.objects.create(
-                order_number = order_num,
-                price        = data['price'],
-                product      = Product(id = data['product_id']),
-                user         = user.id,
-            )
+            for item in ShoppingBasket.objects.filter(user = user.id, checked = True):
+                Order.objects.create(
+                    order_number = order_num,
+                    price        = item.product.price,
+                    product      = item.product.id,
+                    user         = user.id,
+                )
+                item.delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
