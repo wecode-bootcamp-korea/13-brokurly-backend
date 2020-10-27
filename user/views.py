@@ -337,12 +337,12 @@ class FrequentlyProductView(View): # 늘 사는 것
             user    = User.objects.get(user_id = payload['user_id']).id
 
             product_list = [{
-                'id' : item.id,
+                'id'          : item.id,
                 'description' : item.description,
-                'user_id' : item.user.id,
-                'product_id' : item.product.id,
-                'name' : item.product.name,
-                'price' : item.product.price
+                'user_id'     : item.user.id,
+                'product_id'  : item.product.id,
+                'name'        : item.product.name,
+                'price'       : item.product.price
             } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user)]
 
             return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
