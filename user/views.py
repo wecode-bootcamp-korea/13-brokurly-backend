@@ -134,9 +134,7 @@ class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 �
     @access_decorator
     def get(self, request):
         try:
-            payload = request.payload
-
-            user = User.objects.get(user_id = payload['user_id'])
+            user = request.user
 
             user_data = {
                 'id'            : user.id,
@@ -158,11 +156,9 @@ class ShoppingBasketView(View): # 장바구니
     def post(self, request): # 장바구니 등록
         try:
             data = json.loads(request.body)
-
-            payload = request.payload
-            user_id = User.objects.get(user_id = payload['user_id']).id
+            user = request.user
             
-            basket_item = ShoppingBasket.objects.filter(user=user_id, product=data['productId'], option=data['option'])
+            basket_item = ShoppingBasket.objects.filter(user=user.id, product=data['productId'], option=data['option'])
             if basket_item.exists():
                 item = basket_item.get()
                 item.quantity += data['quantity']
@@ -170,9 +166,8 @@ class ShoppingBasketView(View): # 장바구니
             else:
                 ShoppingBasket.objects.create(
                     quantity = data['quantity'],
-                    user     = User(id = user_id),
+                    user     = User(id = user.id),
                     product  = Product(id = data['productId']),
-                    option   = data['option'],
                 )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -185,8 +180,7 @@ class ShoppingBasketView(View): # 장바구니
     @access_decorator
     def get(self, request): # 장바구니 조회
         try:
-            payload = request.payload
-            userid  = User.objects.get(user_id = payload['user_id']).id
+            user = request.user
 
             shopping_list = [{
                     'id'         : item.id,
@@ -199,7 +193,7 @@ class ShoppingBasketView(View): # 장바구니
                     'sold_out'   : item.product.is_sold_out,
                     'sales'      : item.product.sales_count,
                     'image_url'  : item.product.image_url
-                } for item in ShoppingBasket.objects.filter(user=userid)]
+                } for item in ShoppingBasket.objects.filter(user=user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
 
@@ -333,8 +327,7 @@ class FrequentlyProductView(View): # 늘 사는 것
     @access_decorator
     def get(self, request): # 늘 사는 것 조회
         try:
-            payload = request.body
-            user    = User.objects.get(user_id = payload['user_id']).id
+            user = request.user
 
             product_list = [{
                 'id'          : item.id,
@@ -343,7 +336,7 @@ class FrequentlyProductView(View): # 늘 사는 것
                 'product_id'  : item.product.id,
                 'name'        : item.product.name,
                 'price'       : item.product.price
-            } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user)]
+            } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
 
@@ -454,10 +447,9 @@ class OrderHistoryView(View):
     @access_decorator
     def get(self, request): # 주문내역 조회하기
         try:
-            payload = request.payload
-            user_id = User.objects.get(user_id = payload['user_id']).id
+            user = request.user
 
-            if not Order.objects.filter(user = user_id).exists():
+            if not Order.objects.filter(user = user.id).exists():
                 return JsonResponse({'message' : 'NOT_EXISTS_ORDERS'}, status = 400)
 
             order_list = [{
@@ -467,7 +459,7 @@ class OrderHistoryView(View):
                 'create_time'       : item.create_time,
                 'product_name'      : item.product.name,
                 'product_image_url' : item.product.image_url
-            } for item in Order.objects.filter(user = user_id)]
+            } for item in Order.objects.filter(user = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'order_list' : list(order_list)}, status = 200)
 
