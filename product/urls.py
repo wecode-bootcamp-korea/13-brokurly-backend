@@ -6,22 +6,18 @@ from product.views import (
     ProductList,
     ProductDetail,
     MdChoice,
-    ProductSearch,
     RelatedProduct,
-    NewProduct,
-    BestProduct,
+    HomeProduct,
     SaleProduct
 )
 
 urlpatterns = [
-    path('/main/section', MainPageSection.as_view()),
+    path('', ProductList.as_view()),
+    path('/<int:product_id>', ProductDetail.as_view()),
     path('/category', Category.as_view()),
-    path('/product_list', ProductList.as_view()),
-    path('/home/md_choice', MdChoice.as_view()),
-    path('/product_detail', ProductDetail.as_view()),
-    path('/search', ProductSearch.as_view()),
-    path('/related_products', RelatedProduct.as_view()),
-    path('/new_products', NewProduct.as_view()),
-    path('/best_products', BestProduct.as_view()),
-    path('/sale_products', SaleProduct.as_view())
+    path('/home/section', MainPageSection.as_view()),
+    path('/home/md-choice', MdChoice.as_view()),
+    path('/related-products/<int:product_id>', RelatedProduct.as_view()),
+    path('/home', HomeProduct.as_view()),
+    path('/sales', SaleProduct.as_view())
 ]
