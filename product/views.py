@@ -47,21 +47,17 @@ class ProductList(View):
             ordering         = request.GET.get('ordering') 
             search           = request.GET.get('search')
             products         = Product.objects.select_related('sub_category', 'sub_category__main_category').prefetch_related('discount')
+            
+            if main_category_id:
+                    products = products.filter(sub_category__main_category__id=main_category_id)
 
-            if main_category_id and sub_category_id:
-                products = products.filter(Q(sub_category__main_category__id=main_category_id)).filter(Q(sub_category_id=sub_category_id))
-
-            else:
-                if main_category_id:
-                    products = products.filter(Q(sub_category__main_category__id=main_category_id))
- 
             main_category = {
                 'id'       : products.first().sub_category.main_category.id,
                 'name'     : products.first().sub_category.main_category.name,
                 'imageUrl' : products.first().sub_category.main_category.image_active_url
             }
-
-            sub_categories = [sub_category.name for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
+            
+            sub_categories = list(products.values_list('sub_category_id__name',flat=True).distinct())
 
             sort_type_set = {
                 '0' : 'id',
@@ -78,6 +74,9 @@ class ProductList(View):
                 '낮은 가격순',
                 '높은 가격순'   
             ]
+
+            if sub_category_id:
+                products = products.filter(sub_category_id=sub_category_id)
 
             if ordering in sort_type_set:
                 products = products.order_by('is_sold_out', sort_type_set[ordering])
