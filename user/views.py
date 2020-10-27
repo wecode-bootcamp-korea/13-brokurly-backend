@@ -398,9 +398,8 @@ class ProductReviewView(View):
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
-    def get(self, request): # 상품의 전체리뷰 조회
+    def get(self, request, product_id): # 상품의 전체리뷰 조회
         try: 
-            product_id = request.GET.get('product_id')
             product    = Product.objects.get(id = product_id)
             offset     = int(request.GET.get('offset'), 0)
             limit      = int(request.GET.get('limit'), 10)
@@ -416,10 +415,14 @@ class ProductReviewView(View):
                 'product_id'   : item.product_id,
                 'image_url'    : item.image_url,
                 'user_rank'    : item.user.rank.name,
-                'product_name' : item.product.name
+                'product_name' : item.product.name,
             } for item in Review.objects.order_by('-id').filter(product = product.id)[offset:limit]]
 
-            return JsonResponse({'message' : 'SUCCESS', 'review_list' : review_list}, status = 200)
+            return JsonResponse({
+                'message' : 'SUCCESS', 
+                'review_list' : review_list, 
+                'total_count'  : Review.objects.filter(product = product.id).count()
+            }, status = 200)
 
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
