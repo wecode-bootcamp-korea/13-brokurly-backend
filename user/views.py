@@ -285,17 +285,15 @@ class ShoppingBasketCheckView(View):
                 for item in ShoppingBasket.objects.filter(checked=True):
                     item.delete()
 
-                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-            
             elif data['delete'] == 'soldout':
                 for item in ShoppingBasket.objects.all():
                     if item.product.is_sold_out:
                         item.delete()
                 
-                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
-            
             else:
                 return JsonResponse({'message' : 'INVALID_VALUE'}, status = 400)
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
@@ -384,7 +382,7 @@ class UserReviewView(View): # 유저의 상품 리뷰
 class ProductReviewView(View):
     def post(self, request): # 상품의 리뷰 상세보기 클릭 시 조회 수 증가
         try:
-            data   = json.loads(request.body)
+            data = json.loads(request.body)
 
             if not Review.objects.filter(id = data['review_id']).exists():
                 return JsonResponse({'message' : 'NOT_EXISTSED_REVIEW'}, status = 400)
@@ -400,9 +398,12 @@ class ProductReviewView(View):
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
-    def get(self, request, product_id): # 상품의 전체리뷰 조회
+    def get(self, request): # 상품의 전체리뷰 조회
         try: 
-            product = Product.objects.get(id = product_id)
+            product_id = request.GET.get('product_id')
+            product    = Product.objects.get(id = product_id)
+            offset     = int(request.GET.get('offset'), 0)
+            limit      = int(request.GET.get('limit'), 10)
 
             review_list = [{
                 'id'           : item.id,
@@ -411,12 +412,12 @@ class ProductReviewView(View):
                 'help_count'   : item.help_count,
                 'views_count'  : item.views_count,
                 'content'      : item.content,
-                'user_id'      : item.user_id,
+                'user_name'    : item.user.user_name,
                 'product_id'   : item.product_id,
                 'image_url'    : item.image_url,
                 'user_rank'    : item.user.rank.name,
                 'product_name' : item.product.name
-            } for item in Review.objects.filter(product = product.id)]
+            } for item in Review.objects.order_by('-id').filter(product = product.id)[offset:limit]]
 
             return JsonResponse({'message' : 'SUCCESS', 'review_list' : review_list}, status = 200)
 
@@ -428,12 +429,15 @@ class OrderHistoryView(View):
     def post(self, request): # 주문내역 등록
         try:
             data = json.loads(request.body)
+            user = request.user
+
+            order_num = randint(60000000, 69999999)
 
             Order.objects.create(
-                order_number = randint(60000000, 69999999),
+                order_number = order_num,
                 price        = data['price'],
                 product      = Product(id = data['product_id']),
-                user         = User(id = data['user_id']),
+                user         = user.id,
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
