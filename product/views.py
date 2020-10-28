@@ -16,7 +16,7 @@ from product.models         import (
     DiscountProduct
 )
 
-class Category(View):
+class CategoryView(View):
     def get(self, request):
         try:
             if MainCategory.objects.all().exists():
@@ -39,7 +39,7 @@ class Category(View):
         return JsonResponse({'message':'SUCCESS', 'categories':categories}, status=200)
 
 
-class ProductList(View):
+class ProductListView(View):
     def get(self, request):
         try:
             main_category_id = request.GET.get('main')
@@ -47,9 +47,9 @@ class ProductList(View):
             ordering         = request.GET.get('ordering') 
             search           = request.GET.get('search')
             products         = Product.objects.select_related('sub_category', 'sub_category__main_category').prefetch_related('discount')
-            
+
             if main_category_id:
-                    products = products.filter(sub_category__main_category__id=main_category_id)
+                products = products.filter(sub_category__main_category__id=main_category_id)
 
             main_category = {
                 'id'       : products.first().sub_category.main_category.id,
@@ -80,7 +80,7 @@ class ProductList(View):
 
             if ordering in sort_type_set:
                 products = products.order_by('is_sold_out', sort_type_set[ordering])
-            
+ 
             q = Q()
             if search:
                 q &= Q(name__contains=search) | Q(content__contains=search) | Q(productinformation__information__contains=search)
@@ -106,7 +106,7 @@ class ProductList(View):
         return JsonResponse({'message':'SUCCESS', 'mainCategories':main_category, 'subCategories':sub_categories, 'sortings':sortings,'products':products}, status=200)
 
 
-class MdChoice(View):
+class MdChoiceView(View):
     def get(self, request):
         try:
             main_category_id = request.GET.get('category', None)
@@ -130,7 +130,7 @@ class MdChoice(View):
         return JsonResponse({'message':'SUCCESS', 'products':products}, status=200)
 
 
-class ProductDetail(View):
+class ProductDetailView(View):
     def get(self, request, product_id):
         try:
             if Product.objects.filter(id=product_id).exists():
@@ -175,7 +175,7 @@ class ProductDetail(View):
         return JsonResponse({'message':'SUCCESS', 'product_detail':product_detail}, status=200)
 
 
-class MainPageSection(View):
+class MainPageSectionView(View):
     def get(self, request):
         try:
 
@@ -207,7 +207,7 @@ class MainPageSection(View):
         return JsonResponse({'message':'SUCCESS', 'section_list':section_list}, status=200)
 
 
-class RelatedProduct(View):
+class RelatedProductView(View):
     def get(self, request, product_id):
         try:
             sub_category_id = Product.objects.get(pk=product_id).sub_category.id
@@ -223,7 +223,7 @@ class RelatedProduct(View):
         return JsonResponse({'message':'SUCCESS', 'related_products':related_products}, status=200)
 
 
-class HomeProduct(View):
+class HomeProductView(View):
     def get(self, request):
         try:
             product_type = request.GET.get('type')
@@ -268,7 +268,7 @@ class HomeProduct(View):
         return JsonResponse({'message':'SUCCESS', 'sortings':sortings, 'new_products':new_products}, status=200)
             
 
-class SaleProduct(View):
+class SaleProductView(View):
     def get(self, request):
         try:
             ordering = request.GET.get('ordering')
