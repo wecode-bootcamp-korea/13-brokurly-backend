@@ -129,6 +129,42 @@ class FindIdView(View): # 회원 아이디 찾기
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
+class FindPasswordView(View):
+    def post(self, request): # 비밀번호 찾기 유저 정보 확인
+        try:
+            data = json.loads(request.body)
+
+            if User.objects.filter(user_id = data['user_id'], email = data['email'], user_name = data['user_name']).exists():
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
+            return JsonResponse({'message' : 'INVALID_USER'}, status = 400)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
+    def patch(self, request): # 새로운 비밀번호로 변경
+        try:
+            data = json.loads(request.body)
+
+            hashed_pw = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+            user_password = User.objects.get(user_id = data['user_id']).password
+
+            if bcrypt.checkpw(user_password.encode('utf-8'), hashed_pw):
+                return JsonResponse({'message' : 'EQUAL_PASSWORD'}, status = 400)
+
+            user = User.objects.get(user_id = data['user_id'])
+            user.password = hashed_pw.decode('utf-8')
+            user.save()
+
+            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)            
+
 class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 등)
     @access_decorator
     def get(self, request):
