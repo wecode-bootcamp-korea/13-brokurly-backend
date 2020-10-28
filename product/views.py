@@ -156,7 +156,7 @@ class MdChoiceView(View):
 class ProductDetailView(View):
     def get(self, request, product_id):
         try:
-            product = Product.objects.prefetch_related('productinformation_set').get(id=product_id)
+            product = Product.objects.select_related('discount').prefetch_related('productinformation_set').get(id=product_id)
             product.sales_count += 1
             product.save()
 
