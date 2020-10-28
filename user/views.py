@@ -194,7 +194,7 @@ class ShoppingBasketView(View): # 장바구니
                     'sales'      : item.product.sales_count,
                     'image_url'  : item.product.image_url
                 } for item in ShoppingBasket.objects.filter(user=user.id)]
-
+                
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
 
         except Exception as ex:
