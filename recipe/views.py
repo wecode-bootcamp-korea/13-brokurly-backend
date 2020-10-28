@@ -7,9 +7,9 @@ from recipe.models import Recipe, RecipeCategory
 
 class RecipeView(View): # 레시피
     def post(self, request): # 레시피 등록
-        data = json.loads(request.body)
-        
         try:
+            data = json.loads(request.body)
+
             Recipe.objects.create(
                 name            = data['name'],
                 writer          = data['writer'],
@@ -19,27 +19,49 @@ class RecipeView(View): # 레시피
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
 
-    def get(self, request): # 레시피 카테고리별 조회
+    def get(self, request, category_id): # 레시피 카테고리별 조회
         try:
-            category_id = request.GET.get('category_id')
-            recipe_id   = request.GET.get('id')
+            if category_id == 0:
+                    recipe_list = [{
+                    'id'          : item.id,
+                    'name'        : item.name,
+                    'image_url'   : item.image_url,
+                    'category_id' : item.recipe_category.id
+                } for item in Recipe.objects.order_by('?')]
 
-            if category_id == '0':
-                recipe_list = Recipe.objects.order_by('?').values()
-
-            recipe_list = [{
-                'id'          : item.id,
-                'name'        : item.name,
-                'writer'      : item.writer,
-                'image_url'   : item.image_url,
-                'create_time' : item.create_time,
-                'views_count' : item.views_count,
-                'content'     : item.content,
-            } for item in Recipe.objects.get(recipe_category = 1, id = recipe_id)]
+            else:
+                recipe_list = [{
+                    'id'          : item.id,
+                    'name'        : item.name,
+                    'image_url'   : item.image_url,
+                    'category_id' : item.recipe_category.id
+                } for item in Recipe.objects.filter(recipe_category = category_id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : recipe_list}, status = 200)
-        except KeyError as ex:
-            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
+class RecipeDetailView(View):
+    def get(self, request, category_id, recipe_id):
+        try:
+            recipe_list = [{
+                    'id'          : item.id,
+                    'name'        : item.name,
+                    'image_url'   : item.image_url,
+                    'writer'      : item.writer,
+                    'create_time' : item.create_time,
+                    'views_count' : item.views_count,
+                    'content'     : item.content,
+                    'category_id' : item.recipe_category.id
+                } for item in Recipe.objects.filter(recipe_category = category_id, id = recipe_id)]
+            
+            return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : recipe_list}, status = 200)
+
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+        
