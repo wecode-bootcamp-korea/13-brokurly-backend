@@ -472,7 +472,7 @@ class OrderHistoryView(View):
                 'price'             : item.price,
                 'create_time'       : item.create_time,
                 'product_name'      : item.product.name,
-                'product_image_url' : item.product.image_url
+                'image_url'         : item.product.image_url
             } for item in Order.objects.filter(user = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'order_list' : list(order_list)}, status = 200)
