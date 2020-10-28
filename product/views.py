@@ -79,27 +79,27 @@ class ProductListView(View):
 
             sortings = [
                 {    
-                    'id' : 0, 
-                    'name' : '추천순',
+                    'id'   : 0, 
+                    'name' : '추천순'
                 },
                 {   
-                    'id' : 1, 
-                    'name' : '신상품순',
+                    'id'   : 1, 
+                    'name' : '신상품순'
                 },
                 {
-                    'id' : 2, 
-                    'name' : '인기상품순',
+                    'id'   : 2, 
+                    'name' : '인기상품순'
                 },
                 {
-                    'id' : 3, 
-                    'name' : '낮은 가격순',
+                    'id'   : 3, 
+                    'name' : '낮은 가격순'
                 },
                 {
-                    'id' : 4, 
+                    'id'   : 4, 
                     'name' : '높은 가격순'
                 }   
             ]
-    
+
             if ordering in sort_type_set:
                 products = products.order_by('is_sold_out', sort_type_set[ordering])
 
@@ -117,7 +117,7 @@ class ProductListView(View):
                 'discountPercent' : product.discount.discount_percent,
                 'discountName'    : product.discount.name,
                 'discountContent' : product.discount.discount_content,
-                'discountPrice'   : product.price - product.price * product.discount.discount_percent * 0.01,
+                'discountPrice'   : product.price - int(product.price * product.discount.discount_percent * 0.01),
                 'originalPrice'   : product.price
             } for product in products.filter(q, **filters)]
             
@@ -144,7 +144,7 @@ class MdChoiceView(View):
                 'discountPercent' : product.discount.discount_percent,
                 'discountName'    : product.discount.name,
                 'discountContent' : product.discount.discount_content,
-                'discountPrice'   : product.price - product.price * product.discount.discount_percent * 0.01,
+                'discountPrice'   : product.price - int(product.price * product.discount.discount_percent * 0.01),
                 'originalPrice'   : product.price
             } for product in products.filter(Q(sub_category__main_category__id=main_category_id)).order_by('?', 'is_sold_out')[:random.randint(10,12)]]
 
@@ -173,7 +173,7 @@ class ProductDetailView(View):
                 'discountPercent'  : product.discount.discount_percent,
                 'discountName'     : product.discount.name,
                 'discountContent'  : product.discount.discount_content,
-                'discountPrice'    : product.price - product.price * product.discount.discount_percent * 0.01,
+                'discountPrice'    : product.price - int(product.price * product.discount.discount_percent * 0.01),
                 'originalPrice'    : product.price,
                 'salesUnit'        : product_information.sales_unit if product_information else '',
                 'size'             : product_information.size if product_information else '',
@@ -234,7 +234,7 @@ class MainPageSectionView(View):
                     'discountPercent' : product.discount.discount_percent,
                     'discountName'    : product.discount.name,
                     'discountContent' : product.discount.discount_content,
-                    'discountPrice'   : product.price - product.price * product.discount.discount_percent * 0.01,
+                    'discountPrice'   : product.price - int(product.price * product.discount.discount_percent * 0.01),
                     'originalPrice'   : product.price
                 } for product in Product.objects.select_related('discount').filter(is_sold_out=False).order_by(section_type)[:random.randint(10,12)]]
             }for section_type in section_types]
@@ -308,7 +308,7 @@ class HomeProductView(View):
                 'discountPercent' : product.discount.discount_percent,
                 'discountName'    : product.discount.name,
                 'discountContent' : product.discount.discount_content,
-                'discountPrice'   : product.price - product.price * product.discount.discount_percent * 0.01,
+                'discountPrice'   : product.price - int(product.price * product.discount.discount_percent * 0.01),
                 'originalPrice'   : product.price
             } for product in products.order_by('is_sold_out', sort_type_set[ordering])]
 
@@ -362,7 +362,7 @@ class SaleProductView(View):
                 'discountPercent' : product.discount.discount_percent,
                 'discountName'    : product.discount.name,
                 'discountContent' : product.discount.discount_content,
-                'discountPrice'   : product.price - product.price * product.discount.discount_percent * 0.01,
+                'discountPrice'   : product.price - int(product.price * product.discount.discount_percent * 0.01),
                 'originalPrice'   : product.price
             } for product in Product.objects.select_related('discount').exclude(discount__discount_percent=0).order_by('is_sold_out', sort_type_set[ordering])]
 
