@@ -1,8 +1,7 @@
-import json, re, bcrypt, jwt
+import json, re, bcrypt, jwt, uuid
 
 from django.views   import View
 from django.http    import JsonResponse
-from random         import randint
 
 from my_settings    import SECRET, ALGORITHM
 from user.models    import Order, Review, User, Gender, ShoppingBasket, FrequentlyPurchasedProduct, UserRank
@@ -46,13 +45,13 @@ class CheckIdView(View): # 아이디 중복확인
         try:
             data = json.loads(request.body)
 
-            if data['user_id'] == '':
-                return JsonResponse({'message' : 'NOT_ENTERED_USER_ID'}, status = 400)
+            if not data['user_id'] == '':
+                if User.objects.filter(user_id = data['user_id']).exists():
+                    return JsonResponse({'message' : 'USER_ID_DUPLICATED'}, status = 400)
 
-            if User.objects.filter(user_id = data['user_id']).exists():
-                return JsonResponse({'message' : 'USER_ID_DUPLICATED'}, status = 400)
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
-            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            return JsonResponse({'message' : 'NOT_ENTERED_USER_ID'}, status = 400)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
@@ -64,17 +63,17 @@ class CheckEmailView(View): # 이메일 중복확인
         try:
             data = json.loads(request.body)
 
-            if data['email'] == '':
-                return JsonResponse({'message' : 'NOT_ENTERED_EMAIL'}, status = 400)
+            if not data['email'] == '':
+                email_validation = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+                if email_validation.match(str(data['email'])) == None:
+                    return JsonResponse({'message':'EMAIL_VALIDATION'}, status = 400)
 
-            email_validation = re.compile('^[a-zA-Z0-9+-_.]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
-            if email_validation.match(str(data['email'])) == None:
-                return JsonResponse({'message':'EMAIL_VALIDATION'}, status = 400)
+                if User.objects.filter(email = data['email']).exists():
+                    return JsonResponse({'message' : 'EMAIL_DUPLICATED'}, status = 400)
+                
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
-            if User.objects.filter(email = data['email']).exists():
-                return JsonResponse({'message' : 'EMAIL_DUPLICATED'}, status = 400)
-            
-            return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            return JsonResponse({'message' : 'NOT_ENTERED_EMAIL'}, status = 400)
 
         except KeyError as ex:
             return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
@@ -305,8 +304,8 @@ class FrequentlyProductView(View): # 늘 사는 것
         try:
             data = json.loads(request.body)
             user = request.user
-
-            if FrequentlyPurchasedProduct.objects.filter(user = user.id, product = data['product_id']).exists():
+            
+            if user.frequently_purchased_products.filter(id = data['product_id']).exists():
                 return JsonResponse({'message' : 'ALREADY_BEEN_REGISTERED'}, status = 400)
             else:    
                 FrequentlyPurchasedProduct.objects.create(
@@ -410,6 +409,7 @@ class ProductReviewView(View):
             offset     = int(request.GET.get('offset'), 0)
             limit      = int(request.GET.get('limit'), 10)
 
+            reviews = Review.objects.order_by('-id').select_related('product', 'user', 'user__rank').filter(product = product.id)
             review_list = [{
                 'id'           : item.id,
                 'title'        : item.title,
@@ -422,12 +422,12 @@ class ProductReviewView(View):
                 'image_url'    : item.image_url,
                 'user_rank'    : item.user.rank.name,
                 'product_name' : item.product.name,
-            } for item in Review.objects.order_by('-id').filter(product = product.id)[offset:limit]]
+            } for item in reviews[offset:limit]]
 
             return JsonResponse({
                 'message' : 'SUCCESS', 
                 'review_list' : review_list, 
-                'total_count'  : Review.objects.filter(product = product.id).count()
+                'total_count'  : reviews.count()
             }, status = 200)
 
         except Exception as ex:
@@ -439,11 +439,12 @@ class OrderHistoryView(View):
         try:
             user = request.user
 
-            order_num = randint(60000000, 69999999)
+            number = uuid.uuid4()
+            order_num = str(number.int)
 
             for item in ShoppingBasket.objects.filter(user = user.id, checked = True):
                 Order.objects.create(
-                    order_number = order_num,
+                    order_number = order_num[:10],
                     price        = item.product.price,
                     product      = item.product.id,
                     user         = user.id,
