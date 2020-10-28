@@ -282,19 +282,19 @@ class HomeProductView(View):
     
             sortings = [
                 {    
-                    'id' : 0, 
+                    'id'   : 0, 
                     'name' : '신상품순',
                 },
                 {   
-                    'id' : 1, 
+                    'id'   : 1, 
                     'name' : '인기상품순',
                 },
                 {
-                    'id' : 2, 
+                    'id'   : 2, 
                     'name' : '낮은 가격순',
                 },
                 {
-                    'id' : 3, 
+                    'id'     : 3, 
                     'name' : '높은 가격순',
                 } 
             ]
@@ -332,23 +332,23 @@ class SaleProductView(View):
             
             sortings = [
                 {    
-                    'id' : 0, 
+                    'id'   : 0, 
                     'name' : '혜택순',
                 },
                 {   
-                    'id' : 1, 
+                    'id'   : 1, 
                     'name' : '신상품순',
                 },
                 {
-                    'id' : 2, 
+                    'id'   : 2, 
                     'name' : '인기상품순',
                 },
                 {
-                    'id' : 3, 
+                    'id'   : 3, 
                     'name' : '낮은 가격순',
                 },
                 {
-                    'id' : 4, 
+                    'id'   : 4, 
                     'name' : '높은 가격순'
                 }   
             ]
