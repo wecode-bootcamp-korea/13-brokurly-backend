@@ -32,18 +32,6 @@ class Product(models.Model):
     class Meta:
         db_table = 'products'
 
-
-class ProductOption(models.Model):
-    name            = models.CharField(max_length=50)
-    price           = models.FloatField(default=0)
-    is_sold_out     = models.BooleanField(null=True)
-    sales_limit     = models.IntegerField(default=0)
-    product         = models.ForeignKey(Product, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'product_options'
-
-
 class PackingType(models.Model):
     name = models.CharField(max_length=100)
 
