@@ -157,17 +157,16 @@ class ShoppingBasketView(View): # 장바구니
         try:
             data = json.loads(request.body)
             user = request.user
-            
-            basket_item = ShoppingBasket.objects.filter(user=user.id, product=data['productId'], option=data['option'])
-            if basket_item.exists():
-                item = basket_item.get()
+
+            if ShoppingBasket.objects.filter(user=user.id, product=data['product_id']).exists():
+                item = ShoppingBasket.objects.get(user=user.id, product=data['product_id'])
                 item.quantity += data['quantity']
                 item.save()
             else:
                 ShoppingBasket.objects.create(
                     quantity = data['quantity'],
                     user     = User(id = user.id),
-                    product  = Product(id = data['productId']),
+                    product  = Product(id = data['product_id']),
                 )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -314,6 +313,7 @@ class FrequentlyProductView(View): # 늘 사는 것
                     product     = Product(id = data['product_id']),
                     user        = user.id,
                     description = '',
+                    quantity    = 1
                 )
 
                 return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -335,7 +335,8 @@ class FrequentlyProductView(View): # 늘 사는 것
                 'product_id'    : item.product.id,
                 'name'          : item.product.name,
                 'price'         : item.product.price,
-                'product_image' : item.product.image_url
+                'image_url'     : item.product.image_url,
+                'quantity'      : item.quantity
             } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
@@ -366,14 +367,15 @@ class UserReviewView(View): # 유저의 상품 리뷰
             data = json.loads(request.body)
             user = request.user
 
+            contents = data['content'].split('>')
             Review.objects.create(
                 title       = data['title'],
                 help_count  = 0,
                 views_count = 0,
-                content     = data['content'],
-                user        = user.id,
+                content     = contents[0],
+                user        = User(id = user.id),
                 product     = Product(id = data['product_id']),
-                image_url   = data['image_url'],
+                image_url   = contents[1] if data['content'].find('>') > -1 else ''
             )
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
@@ -435,7 +437,6 @@ class OrderHistoryView(View):
     @access_decorator
     def post(self, request): # 주문내역 등록
         try:
-            data = json.loads(request.body)
             user = request.user
 
             order_num = randint(60000000, 69999999)

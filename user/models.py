@@ -39,6 +39,7 @@ class FrequentlyPurchasedProduct(models.Model):
     description = models.CharField(max_length=50)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     product     = models.ForeignKey('product.Product', on_delete=models.CASCADE)
+    quantity    = models.IntegerField(default=1)
 
     class Meta:
         db_table = 'frequently_purchased_products'
