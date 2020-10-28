@@ -65,11 +65,9 @@ class ProductListView(View):
                 'id'   : sub_category.id,
                 'name' : sub_category.name
             } for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
-            
+
             if sub_category_id:
                 filters['sub_category_id'] = sub_category_id
-
-            
 
             sort_type_set = {
                 '0' : 'id',
