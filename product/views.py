@@ -104,7 +104,7 @@ class ProductListView(View):
                 products = products.order_by('is_sold_out', sort_type_set[ordering])
 
             q = Q()
-            print(filters)
+
             if search:
                 q &= Q(name__contains=search) | Q(content__contains=search) | Q(productinformation__information__contains=search)
 
