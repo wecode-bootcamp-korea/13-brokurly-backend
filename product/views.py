@@ -61,13 +61,15 @@ class ProductListView(View):
                 'imageUrl' : product.sub_category.main_category.image_active_url
                 }
 
+                sub_categories = [{
+                'id'   : sub_category.id,
+                'name' : sub_category.name
+            } for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
+            
             if sub_category_id:
                 filters['sub_category_id'] = sub_category_id
 
-                sub_categories = [{
-                    'id'   : sub_category.id,
-                    'name' : sub_category.name
-                } for sub_category in SubCategory.objects.filter(main_category_id=main_category_id)]
+            
 
             sort_type_set = {
                 '0' : 'id',
@@ -104,7 +106,7 @@ class ProductListView(View):
                 products = products.order_by('is_sold_out', sort_type_set[ordering])
 
             q = Q()
-
+            print(filters)
             if search:
                 q &= Q(name__contains=search) | Q(content__contains=search) | Q(productinformation__information__contains=search)
 
