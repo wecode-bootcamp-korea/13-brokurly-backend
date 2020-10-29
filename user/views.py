@@ -221,16 +221,17 @@ class ShoppingBasketView(View): # 장바구니
             user = request.user
 
             shopping_list = [{
-                    'id'         : item.id,
-                    'quantity'   : item.quantity,
-                    'product_id' : item.product_id,
-                    'user_id'    : item.user_id,
-                    'checked'    : item.checked,
-                    'name'       : item.product.name,
-                    'price'      : item.product.price,
-                    'sold_out'   : item.product.is_sold_out,
-                    'sales'      : item.product.sales_count,
-                    'image_url'  : item.product.image_url
+                    'id'             : item.id,
+                    'quantity'       : item.quantity,
+                    'product_id'     : item.product_id,
+                    'user_id'        : item.user_id,
+                    'checked'        : item.checked,
+                    'name'           : item.product.name,
+                    'price'          : item.product.price,
+                    'discount_price' : item.product.price - (item.product.price * item.product.discount.discount_percent * 0.01),
+                    'sold_out'       : item.product.is_sold_out,
+                    'sales'          : item.product.sales_count,
+                    'image_url'      : item.product.image_url
                 } for item in ShoppingBasket.objects.filter(user=user.id)]
                 
             return JsonResponse({'message' : 'SUCCESS', 'shopping_list' : shopping_list}, status = 200)
@@ -368,14 +369,15 @@ class FrequentlyProductView(View): # 늘 사는 것
             user = request.user
 
             product_list = [{
-                'id'            : item.id,
-                'description'   : item.description,
-                'user_id'       : item.user.id,
-                'product_id'    : item.product.id,
-                'name'          : item.product.name,
-                'price'         : item.product.price,
-                'image_url'     : item.product.image_url,
-                'quantity'      : item.quantity
+                'id'             : item.id,
+                'description'    : item.description,
+                'user_id'        : item.user.id,
+                'product_id'     : item.product.id,
+                'name'           : item.product.name,
+                'price'          : item.product.price,
+                'discount_price' : item.product.price - (item.product.price * item.product.discount.discount_percent * 0.01),
+                'image_url'      : item.product.image_url,
+                'quantity'       : item.quantity
             } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'product_list' : product_list}, status = 200)
