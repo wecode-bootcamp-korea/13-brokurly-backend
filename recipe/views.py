@@ -25,21 +25,14 @@ class RecipeView(View): # 레시피
 
     def get(self, request, category_id): # 레시피 카테고리별 조회
         try:
-            if category_id == 0:
-                    recipe_list = [{
-                    'id'          : item.id,
-                    'name'        : item.name,
-                    'image_url'   : item.image_url,
-                    'category_id' : item.recipe_category.id
-                } for item in Recipe.objects.order_by('?')]
+            recipe = Recipe.objects.filter(recipe_category = category_id) if category_id != 0 else Recipe.objects.order_by('?')
 
-            else:
-                recipe_list = [{
-                    'id'          : item.id,
-                    'name'        : item.name,
-                    'image_url'   : item.image_url,
-                    'category_id' : item.recipe_category.id
-                } for item in Recipe.objects.filter(recipe_category = category_id)]
+            recipe_list = [{
+                'id'          : item.id,
+                'name'        : item.name,
+                'image_url'   : item.image_url,
+                'category_id' : item.recipe_category.id
+            } for item in recipe]
 
             return JsonResponse({'message' : 'SUCCESS', 'recipe_list' : recipe_list}, status = 200)
 
