@@ -19,30 +19,29 @@ class SubCategory(models.Model):
 
 class Product(models.Model):
     name             = models.CharField(max_length=50)
-    price            = models.FloatField()
+    price            = models.FloatField(default=0)
     content          = models.CharField(max_length=1000)
     is_sold_out      = models.BooleanField(null=True)
     image_url        = models.CharField(max_length=200)
-    sales_rate       = models.FloatField()
+    sales_count      = models.IntegerField(default=0)
     create_time      = models.DateTimeField(auto_now_add=True)
     sub_category     = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
     product_question = models.ManyToManyField('user.User', through='ProductQuestion', related_name='product_questions')
+    discount         = models.ForeignKey('Discount', on_delete=models.CASCADE)
     
     class Meta:
         db_table = 'products'
 
 
-class ProductOption(models.Model):
-    name            = models.CharField(max_length=50)
-    price           = models.FloatField()
-    is_sold_out     = models.BooleanField(null=True)
-    sales_limit     = models.IntegerField(default=0)
-    product         = models.ForeignKey(Product, on_delete=models.CASCADE)
+class Discount(models.Model):
+    name             = models.CharField(max_length=50)
+    discount_content = models.CharField(max_length=50)
+    discount_percent = models.FloatField()
 
     class Meta:
-        db_table = 'sub_products'
+        db_table = 'discounts'
 
-
+        
 class PackingType(models.Model):
     name = models.CharField(max_length=100)
 
@@ -65,12 +64,20 @@ class ProductInformation(models.Model):
     allergy_information     = models.CharField(max_length=200, null=True, blank=True)
     note                    = models.CharField(max_length=1000, null=True, blank=True)
     information             = models.CharField(max_length=1000, null=True, blank=True)
-    shipping_classification = models.ForeignKey(ShippingClassification, on_delete=models.CASCADE)
+    shipping_classification = models.ManyToManyField('ShippingClassification', through='ProductShipping')
     packing_type            = models.ForeignKey(PackingType, on_delete=models.CASCADE)
     product                 = models.ForeignKey(Product, on_delete=models.CASCADE)
 
     class Meta:
         db_table = 'product_informations'
+
+
+class ProductShipping(models.Model):
+    product_information     = models.ForeignKey(ProductInformation, on_delete=models.CASCADE)
+    shipping_classification = models.ForeignKey(ShippingClassification, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'product_shippings'
 
 
 class ProductTag(models.Model):
@@ -79,17 +86,6 @@ class ProductTag(models.Model):
 
     class Meta:
         db_table = 'product_tags'
-
-
-class DiscountProduct(models.Model):
-    name             = models.CharField(max_length=50)
-    discount_percent = models.FloatField()
-    discount_start   = models.DateTimeField()
-    discount_end     = models.DateTimeField()
-    product          = models.ForeignKey(Product, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'discount_products'
 
 
 class ProductQuestion(models.Model):
@@ -105,3 +101,6 @@ class ProductQuestion(models.Model):
 
 class MorningDeliveryArea(models.Model):
     name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'morning_delivery_areas'
