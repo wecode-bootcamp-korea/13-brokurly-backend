@@ -13,7 +13,7 @@ class UserRank(models.Model):
         db_table = 'user_ranks'
 
 class User(models.Model):
-    user_id                      = models.CharField(max_length=50)
+    account                      = models.CharField(max_length=50)
     password                     = models.CharField(max_length=200)
     user_name                    = models.CharField(max_length=50)
     email                        = models.EmailField(max_length=50)
