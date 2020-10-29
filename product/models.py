@@ -27,11 +27,21 @@ class Product(models.Model):
     create_time      = models.DateTimeField(auto_now_add=True)
     sub_category     = models.ForeignKey(SubCategory, on_delete=models.CASCADE)
     product_question = models.ManyToManyField('user.User', through='ProductQuestion', related_name='product_questions')
-    discount         = models.ManyToManyField("Discount", through='DiscountProduct', related_name='discount_product')
+    discount         = models.ForeignKey('Discount', on_delete=models.CASCADE)
     
     class Meta:
         db_table = 'products'
 
+
+class Discount(models.Model):
+    name             = models.CharField(max_length=50)
+    discount_content = models.CharField(max_length=50)
+    discount_percent = models.FloatField()
+
+    class Meta:
+        db_table = 'discounts'
+
+        
 class PackingType(models.Model):
     name = models.CharField(max_length=100)
 
@@ -54,13 +64,20 @@ class ProductInformation(models.Model):
     allergy_information     = models.CharField(max_length=200, null=True, blank=True)
     note                    = models.CharField(max_length=1000, null=True, blank=True)
     information             = models.CharField(max_length=1000, null=True, blank=True)
-    shipping_classification = models.ForeignKey(ShippingClassification, on_delete=models.CASCADE)
+    shipping_classification = models.ManyToManyField('ShippingClassification', through='ProductShipping')
     packing_type            = models.ForeignKey(PackingType, on_delete=models.CASCADE)
     product                 = models.ForeignKey(Product, on_delete=models.CASCADE)
 
-
     class Meta:
         db_table = 'product_informations'
+
+
+class ProductShipping(models.Model):
+    product_information     = models.ForeignKey(ProductInformation, on_delete=models.CASCADE)
+    shipping_classification = models.ForeignKey(ShippingClassification, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'product_shippings'
 
 
 class ProductTag(models.Model):
@@ -69,25 +86,6 @@ class ProductTag(models.Model):
 
     class Meta:
         db_table = 'product_tags'
-
-
-class Discount(models.Model):
-    name             = models.CharField(max_length=50)
-    discount_content = models.CharField(max_length=50)
-    discount_percent = models.FloatField()
-
-    class Meta:
-        db_table = 'discounts'
-
-
-class DiscountProduct(models.Model):
-    discount_start = models.DateTimeField()
-    discount_end   = models.DateTimeField()
-    product        = models.ForeignKey(Product, on_delete=models.CASCADE)
-    discount       = models.ForeignKey(Discount, on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'discount_products'
 
 
 class ProductQuestion(models.Model):

@@ -25,17 +25,6 @@ class Migration(migrations.Migration):
             },
         ),
         migrations.CreateModel(
-            name='DiscountProduct',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('discount_start', models.DateTimeField()),
-                ('discount_end', models.DateTimeField()),
-            ],
-            options={
-                'db_table': 'discount_products',
-            },
-        ),
-        migrations.CreateModel(
             name='MainCategory',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -99,19 +88,7 @@ class Migration(migrations.Migration):
                 'db_table': 'product_informations',
             },
         ),
-        migrations.CreateModel(
-            name='ProductOption',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('price', models.FloatField(default=0)),
-                ('is_sold_out', models.BooleanField(null=True)),
-                ('sales_limit', models.IntegerField(default=0)),
-            ],
-            options={
-                'db_table': 'product_options',
-            },
-        ),
+
         migrations.CreateModel(
             name='ShippingClassification',
             fields=[
@@ -142,6 +119,17 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'product_tags',
+            },
+        ),
+        migrations.CreateModel(
+            name='ProductShipping',
+            fields=[
+                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('product_information', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='product.productinformation')),
+                ('shipping_classification', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='product.shippingclassification')),
+            ],
+            options={
+                'db_table': 'product_shippings',
             },
         ),
         migrations.CreateModel(

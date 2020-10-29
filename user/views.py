@@ -1,4 +1,8 @@
-import json, re, bcrypt, jwt, uuid
+import json
+imrpot re
+import bcrypt
+import jwt
+import uuid
 
 from django.views   import View
 from django.http    import JsonResponse
