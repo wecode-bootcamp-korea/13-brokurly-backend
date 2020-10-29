@@ -228,7 +228,7 @@ class ShoppingBasketView(View): # 장바구니
                     'checked'        : item.checked,
                     'name'           : item.product.name,
                     'price'          : item.product.price,
-                    'discount_price' : item.product.price - (item.product.price * item.product.discount.discount_percent * 0.01),
+                    'discount_price' : item.product.price - int(item.product.price * item.product.discount.discount_percent * 0.01),
                     'sold_out'       : item.product.is_sold_out,
                     'sales'          : item.product.sales_count,
                     'image_url'      : item.product.image_url
@@ -375,7 +375,7 @@ class FrequentlyProductView(View): # 늘 사는 것
                 'product_id'     : item.product.id,
                 'name'           : item.product.name,
                 'price'          : item.product.price,
-                'discount_price' : item.product.price - (item.product.price * item.product.discount.discount_percent * 0.01),
+                'discount_price' : item.product.price - int(item.product.price * item.product.discount.discount_percent * 0.01),
                 'image_url'      : item.product.image_url,
                 'quantity'       : item.quantity
             } for item in FrequentlyPurchasedProduct.objects.filter(user_id = user.id)]
