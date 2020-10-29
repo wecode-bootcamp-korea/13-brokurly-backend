@@ -41,7 +41,7 @@ class Discount(models.Model):
     class Meta:
         db_table = 'discounts'
 
-
+        
 class PackingType(models.Model):
     name = models.CharField(max_length=100)
 

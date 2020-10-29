@@ -141,9 +141,6 @@ CORS_ALLOW_HEADERS = (
     'x-requested-with',
 )
 
-STRIPE_SECRET_KEY = my_settings.STRIPE_SECRET_KEY
-
-
 LOGGING = {
     'disable_existing_loggers': False,
     'version': 1,
