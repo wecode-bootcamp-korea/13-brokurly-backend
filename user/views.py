@@ -3,14 +3,16 @@ import re
 import bcrypt
 import jwt
 import uuid
+import os
 
 from django.views   import View
 from django.http    import JsonResponse
 
 from my_settings    import SECRET, ALGORITHM
-from user.models    import Order, Review, User, Gender, ShoppingBasket, FrequentlyPurchasedProduct, UserRank
+from user.models    import Order, Review, User, Gender, ShoppingBasket, FrequentlyPurchasedProduct, UserRank, SMS
 from product.models import Product
 from core.utils     import access_decorator
+from twilio.rest    import Client
 
 class SignUpView(View): # 회원가입
     def post(self, request):
@@ -190,6 +192,43 @@ class UserDataView(View): # 회원 정보 조회(메인페이지, 주문하기 �
         except Exception as ex:
             return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
 
+class SendSmsView(View): # 문자 인증 보내기
+    def post(self, request):
+        try:
+            account_sid = os.environ['TWILIO_ACCOUNT_SID']
+            auth_token = os.environ['TWILIO_AUTH_TOKEN']
+            client = Client(account_sid, auth_token)
+            
+            sms_num = SMS.objects.order_by('?').first().number
+            message = client.messages \
+                            .create(
+                                body="인증번호 [" + sms_num + "]",
+                                to='+8201098825898',
+                                from_='+12568264151'
+                            )
+            
+            return JsonResponse({'message' : 'SUCCESS', 'access_number' : sms_num}, status = 200)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
+class CheckSmsView(View): # 문자 인증 확인
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+
+            if SMS.objects.filter(number = data['access_number']).exists():
+                return JsonResponse({'message' : 'SUCCESS'}, status = 200)
+            
+            return JsonResponse({'message' : 'INVALID_NUMBER'}, status = 400)
+
+        except KeyError as ex:
+            return JsonResponse({'message' : 'KEY_ERROR_' + ex.args[0]}, status = 400)
+        except Exception as ex:
+            return JsonResponse({'message' : 'ERROR_' + ex.args[0]}, status = 400)
+
 class ShoppingBasketView(View): # 장바구니
     @access_decorator
     def post(self, request): # 장바구니 등록
@@ -346,12 +385,12 @@ class FrequentlyProductView(View): # 늘 사는 것
             data = json.loads(request.body)
             user = request.user
             
-            if user.frequently_purchased_products.filter(id = data['product_id']).exists():
-                return JsonResponse({'message' : 'ALREADY_BEEN_REGISTERED'}, status = 400)
+            if user.frequently_purchased_product.filter(id = data['product_id']).exists():
+                return JsonResponse({'message' : 'ALREADY_BEEN_REGISTERED'}, status = 200)
             else:    
                 FrequentlyPurchasedProduct.objects.create(
                     product     = Product(id = data['product_id']),
-                    user        = user.id,
+                    user        = User(id = user.id),
                     description = '',
                     quantity    = 1
                 )
@@ -388,11 +427,9 @@ class FrequentlyProductView(View): # 늘 사는 것
     @access_decorator
     def delete(self, request): # 늘 사는 것 목록 삭제
         try:
-            data = json.loads(request.body)
             user = request.user
 
-            item = FrequentlyPurchasedProduct.objects.get(id = data['product_id'], user = user.id)
-            item.delete()
+            FrequentlyPurchasedProduct.objects.filter(user = user.id).delete()
 
             return JsonResponse({'message' : 'SUCCESS'}, status = 200)
 
@@ -486,10 +523,10 @@ class OrderHistoryView(View):
 
             for item in ShoppingBasket.objects.filter(user = user.id, checked = True):
                 Order.objects.create(
-                    order_number = order_num[:10],
+                    order_number = order_num[:8],
                     price        = item.product.price,
-                    product      = item.product.id,
-                    user         = user.id,
+                    product_id   = item.product.id,
+                    user_id      = user.id,
                 )
                 item.delete()
 
@@ -505,16 +542,13 @@ class OrderHistoryView(View):
         try:
             user = request.user
 
-            if not Order.objects.filter(user = user.id).exists():
-                return JsonResponse({'message' : 'NOT_EXISTS_ORDERS'}, status = 400)
-
             order_list = [{
                 'id'                : item.id,
                 'order_number'      : item.order_number,
                 'price'             : item.price,
                 'create_time'       : item.create_time,
                 'product_name'      : item.product.name,
-                'image_url'         : item.product.image_url
+                'product_image_url' : item.product.image_url
             } for item in Order.objects.filter(user = user.id)]
 
             return JsonResponse({'message' : 'SUCCESS', 'order_list' : list(order_list)}, status = 200)

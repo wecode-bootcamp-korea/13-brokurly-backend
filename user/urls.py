@@ -14,6 +14,8 @@ from user.views  import (
     UserDataView,
     UserReviewView,
     OrderHistoryView,
+    SendSmsView,
+    CheckSmsView,
     )
 
 urlpatterns = [
@@ -29,5 +31,7 @@ urlpatterns = [
     path('/product/<int:product_id>/reviews', ProductReviewView.as_view()),
     path('/user-data', UserDataView.as_view()),
     path('/user-review', UserReviewView.as_view()),
-    path('/orderhistory', OrderHistoryView.as_view())
+    path('/orderhistory', OrderHistoryView.as_view()),
+    path('/sendsms', SendSmsView.as_view()),
+    path('/checksms', CheckSmsView.as_view())
 ]

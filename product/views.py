@@ -53,7 +53,7 @@ class ProductListView(View):
             if main_category_id:
                 filters['sub_category__main_category__id'] = main_category_id
             
-                product = products.first()
+                product = products.filter(**filters).first()
 
                 main_category = {
                 'id'       : product.sub_category.main_category.id,
