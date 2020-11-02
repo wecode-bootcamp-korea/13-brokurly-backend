@@ -86,3 +86,6 @@ class Review(models.Model):
 
     class Meta:
         db_table = 'reviews'
+
+class SMS(models.Model):
+    number = models.IntegerField(default=0)
